@@ -1,0 +1,184 @@
+﻿<Window x:Class="NalogParserWPF.HistoryDetailWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Детали записи из истории" 
+        Height="650" Width="800"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="CanResize"
+        MinHeight="500" MinWidth="600"
+        Background="#E8F4F4"
+        KeyDown="Window_KeyDown">
+
+    <Window.Resources>
+        <Style x:Key="MainButton" TargetType="Button">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="MinWidth" Value="120"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="Padding" Value="15,0"/>
+        </Style>
+
+        <Style x:Key="ExportButton" TargetType="Button" BasedOn="{StaticResource MainButton}">
+            <Setter Property="Background" Value="#B87333"/>
+            <Setter Property="Content" Value="📄 Экспорт в PDF"/>
+        </Style>
+
+        <Style x:Key="CloseButton" TargetType="Button" BasedOn="{StaticResource MainButton}">
+            <Setter Property="Background" Value="#C97B7B"/>
+            <Setter Property="Content" Value="✕ Закрыть"/>
+        </Style>
+
+        <Style x:Key="CopyButton" TargetType="Button" BasedOn="{StaticResource MainButton}">
+            <Setter Property="Background" Value="#4A7B8B"/>
+            <Setter Property="Content" Value="📋 Копировать"/>
+            <Setter Property="MinWidth" Value="120"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="15">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Заголовок -->
+        <Border Grid.Row="0" 
+                Background="#1A8B8B" 
+                CornerRadius="8"
+                Padding="10"
+                Margin="0,0,0,15">
+            <Grid>
+                <TextBlock Text="📋 ПРОСМОТР ЗАПИСИ ИЗ ИСТОРИИ"
+                           FontSize="20"
+                           FontWeight="Bold"
+                           Foreground="White"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
+
+        <!-- Информация о записи -->
+        <Border Grid.Row="1" 
+                Padding="10" 
+                BorderBrush="#1A8B8B" 
+                BorderThickness="1" 
+                CornerRadius="5"
+                Background="#F0F8F8"
+                Margin="0,0,0,15">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Grid.Column="0" 
+                           Text="Дата:" 
+                           FontSize="14" 
+                           FontWeight="Bold"
+                           Foreground="#1A5C5C"
+                           Margin="0,0,10,5"/>
+                <TextBlock Grid.Row="0" Grid.Column="1" 
+                           x:Name="tbDate"
+                           FontSize="14"
+                           Foreground="#1A5C5C"
+                           Margin="0,0,15,5"/>
+
+                <TextBlock Grid.Row="0" Grid.Column="2" 
+                           Text="Тип:" 
+                           FontSize="14" 
+                           FontWeight="Bold"
+                           Foreground="#1A5C5C"
+                           Margin="0,0,10,5"/>
+                <TextBlock Grid.Row="0" Grid.Column="3" 
+                           x:Name="tbType"
+                           FontSize="14"
+                           Foreground="#1A5C5C"
+                           Margin="0,0,15,5"/>
+
+                <TextBlock Grid.Row="0" Grid.Column="4" 
+                           Text="Статус:" 
+                           FontSize="14" 
+                           FontWeight="Bold"
+                           Foreground="#1A5C5C"
+                           Margin="0,0,10,5"/>
+                <TextBlock Grid.Row="0" Grid.Column="5" 
+                           x:Name="tbStatus"
+                           FontSize="14"
+                           FontWeight="Bold"
+                           Margin="0,0,0,5"/>
+
+                <TextBlock Grid.Row="1" Grid.Column="0" 
+                           Text="Параметры:" 
+                           FontSize="14" 
+                           FontWeight="Bold"
+                           Foreground="#1A5C5C"
+                           Margin="0,0,10,5"/>
+                <TextBlock Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="5"
+                           x:Name="tbParams"
+                           FontSize="14"
+                           Foreground="#1A5C5C"
+                           TextWrapping="Wrap"/>
+            </Grid>
+        </Border>
+
+        <!-- Результат -->
+        <Border Grid.Row="2" 
+                Padding="10" 
+                BorderBrush="#1A8B8B" 
+                BorderThickness="1" 
+                CornerRadius="5"
+                Background="White">
+            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Auto">
+                <TextBox x:Name="txtResult" 
+                         FontSize="14"
+                         Padding="10"
+                         Background="White"
+                         BorderThickness="0"
+                         IsReadOnly="True"
+                         TextWrapping="Wrap"
+                         AcceptsReturn="True"
+                         VerticalScrollBarVisibility="Auto"
+                         FontFamily="Consolas"/>
+            </ScrollViewer>
+        </Border>
+
+        <!-- Кнопки действий -->
+        <StackPanel Grid.Row="3" 
+                    Orientation="Horizontal" 
+                    HorizontalAlignment="Right"
+                    Margin="0,10,0,0">
+            <Button x:Name="btnExportPdf"
+                    Style="{StaticResource ExportButton}"
+                    Click="BtnExportPdf_Click"/>
+
+            <Button x:Name="btnCopy"
+                    Style="{StaticResource CopyButton}"
+                    Click="BtnCopy_Click"/>
+
+            <Button x:Name="btnClose"
+                    Style="{StaticResource CloseButton}"
+                    Click="BtnClose_Click"/>
+
+            <TextBlock Text="(или нажмите Esc для закрытия)"
+                       FontSize="12"
+                       Foreground="#666"
+                       VerticalAlignment="Center"
+                       Margin="10,0,0,0"/>
+        </StackPanel>
+    </Grid>
+</Window>
