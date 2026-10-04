@@ -1,8 +1,711 @@
-﻿<Application x:Class="NalogParserWPF.App"
+<Application x:Class="NalogParserWPF.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:NalogParserWPF">
-    <Application.Resources>
-         
-    </Application.Resources>
+             xmlns:local="clr-namespace:NalogParserWPF"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks">
+   <Application.Resources>
+       <!-- Тема задаётся динамически через App.ApplyTheme(theme).
+            Палитра СК: васильковый (AccentBrush) + жёлтый акцент (SecondaryBrush). -->
+       <SolidColorBrush x:Key="WindowBackgroundBrush" Color="#F0F4FC"/>
+       <SolidColorBrush x:Key="PanelBackgroundBrush" Color="#F7FAFF"/>
+       <SolidColorBrush x:Key="CardBackgroundBrush" Color="#FFFFFF"/>
+       <SolidColorBrush x:Key="InputBackgroundBrush" Color="#FFFFFF"/>
+
+       <!-- Цвета выпадающих списков (ComboBox) и полей даты (DatePicker).
+            В светлой теме совпадают с карточками/полями ввода, в тёмной теме
+            задаются отдельно (App.ApplyTheme): выпадающий список не должен
+            зависеть от системных цветов Windows, иначе в тёмной теме текст
+            оказывается светлым на белом фоне. -->
+       <SolidColorBrush x:Key="ComboBoxBackgroundBrush" Color="#FFFFFF"/>
+       <SolidColorBrush x:Key="ComboBoxForegroundBrush" Color="#0D1B3E"/>
+       <SolidColorBrush x:Key="ComboBoxBorderBrush" Color="#C9D4EA"/>
+       <SolidColorBrush x:Key="TextPrimaryBrush" Color="#0D1B3E"/>
+       <SolidColorBrush x:Key="TextSecondaryBrush" Color="#4A5578"/>
+       <SolidColorBrush x:Key="TextAccentBrush" Color="#1A3A8F"/>
+       <SolidColorBrush x:Key="AccentBrush" Color="#1A3A8F"/>
+       <!-- Мягкий акцент: фон наведения в списках (пункты выпадающих списков).
+            Выбранный пункт заливается AccentBrush, пункт под курсором —
+            LightAccentBrush, чтобы они не выглядели одинаково. -->
+       <SolidColorBrush x:Key="LightAccentBrush" Color="#DCE6FA"/>
+       <SolidColorBrush x:Key="SecondaryBrush" Color="#F5C518"/>
+       <SolidColorBrush x:Key="OnSecondaryBrush" Color="#0D1B3E"/>
+       <SolidColorBrush x:Key="BorderBrush" Color="#C9D4EA"/>
+       <SolidColorBrush x:Key="GridLineBrush" Color="#DCE4F2"/>
+       <SolidColorBrush x:Key="HeaderBackgroundBrush" Color="#E1E9F8"/>
+       <SolidColorBrush x:Key="AltRowBackgroundBrush" Color="#F5F8FF"/>
+       <SolidColorBrush x:Key="TabBackgroundBrush" Color="#DCE6FA"/>
+       <SolidColorBrush x:Key="TabHoverBrush" Color="#C6D6F5"/>
+       <SolidColorBrush x:Key="TabHoverForegroundBrush" Color="#12276B"/>
+       <SolidColorBrush x:Key="ButtonBackgroundBrush" Color="#1A3A8F"/>
+       <SolidColorBrush x:Key="ButtonTextBrush" Color="#FFFFFF"/>
+       <SolidColorBrush x:Key="DividerBrush" Color="#B9C7E4"/>
+       <SolidColorBrush x:Key="WarningBackgroundBrush" Color="#FFF9E6"/>
+       <SolidColorBrush x:Key="WarningBorderBrush" Color="#F5C518"/>
+       <SolidColorBrush x:Key="WarningTextBrush" Color="#8A6D00"/>
+       <SolidColorBrush x:Key="HighlightBackgroundBrush" Color="#FFF3C4"/>
+
+       <!-- Цвета статусов, вспомогательных кнопок и акцентных элементов.
+            Используются через DynamicResource, поэтому меняются вместе с темой. -->
+       <SolidColorBrush x:Key="DangerSoftBrush" Color="#C97B7B"/>
+       <SolidColorBrush x:Key="DangerBrush" Color="#C0392B"/>
+       <SolidColorBrush x:Key="ExportButtonBrush" Color="#B87333"/>
+       <SolidColorBrush x:Key="ExcelButtonBrush" Color="#217346"/>
+       <SolidColorBrush x:Key="SecondaryButtonBrush" Color="#2E4FA8"/>
+       <SolidColorBrush x:Key="NeutralButtonBrush" Color="#5A6480"/>
+       <SolidColorBrush x:Key="TextMutedBrush" Color="#8A93AD"/>
+       <SolidColorBrush x:Key="OnAccentBrush" Color="#FFFFFF"/>
+       <SolidColorBrush x:Key="OverlayDisabledBrush" Color="#14000000"/>
+       <SolidColorBrush x:Key="OverlayPressedBrush" Color="#33000000"/>
+
+       <!-- ========================================================= -->
+       <!-- Иконки (Bootstrap Icons)                                  -->
+       <!-- ========================================================= -->
+       <!-- Вместо эмодзи в интерфейсе используются векторные иконки
+            MahApps.Metro.IconPacks (PackIconBootstrapIcons): они одинаково
+            выглядят на всех системах и корректно меняют цвет вместе с темой.
+            Шаблоны ниже применяются через свойство ContentTemplate кнопок,
+            переключателей и заголовков. -->
+
+       <!-- Неявный стиль: единый размер иконок -->
+       <Style TargetType="iconPacks:PackIconBootstrapIcons">
+           <Setter Property="Width" Value="16"/>
+           <Setter Property="Height" Value="16"/>
+           <Setter Property="VerticalAlignment" Value="Center"/>
+       </Style>
+
+       <!-- Общий шаблон «иконка + подпись». Иконка наследует цвет текста
+            (кнопки, заголовка, подписи), поэтому контраст сохраняется и в тёмной теме. -->
+       <DataTemplate x:Key="IconDetailsTemplate">
+           <StackPanel Orientation="Horizontal">
+               <iconPacks:PackIconBootstrapIcons Kind="MenuButtonWide" Margin="0,0,6,0"/>
+               <TextBlock Text="{Binding}" VerticalAlignment="Center"/>
+           </StackPanel>
+       </DataTemplate>
+       <DataTemplate x:Key="IconSearchTemplate">
+           <StackPanel Orientation="Horizontal">
+               <iconPacks:PackIconBootstrapIcons Kind="Search" Margin="0,0,6,0"/>
+               <TextBlock Text="{Binding}" VerticalAlignment="Center"/>
+           </StackPanel>
+       </DataTemplate>
+       <DataTemplate x:Key="IconCancelTemplate">
+           <StackPanel Orientation="Horizontal">
+               <iconPacks:PackIconBootstrapIcons Kind="StopCircle" Margin="0,0,6,0"/>
+               <TextBlock Text="{Binding}" VerticalAlignment="Center"/>
+           </StackPanel>
+       </DataTemplate>
+       <DataTemplate x:Key="IconClearTemplate">
+           <StackPanel Orientation="Horizontal">
+               <iconPacks:PackIconBootstrapIcons Kind="Trash" Margin="0,0,6,0"/>
+               <TextBlock Text="{Binding}" VerticalAlignment="Center"/>
+           </StackPanel>
+       </DataTemplate>
+       <DataTemplate x:Key="IconRefreshTemplate">
+           <StackPanel Orientation="Horizontal">
+               <iconPacks:PackIconBootstrapIcons Kind="ArrowRepeat" Margin="0,0,6,0"/>
+               <TextBlock Text="{Binding}" VerticalAlignment="Center"/>
+           </StackPanel>
+       </DataTemplate>
+       <DataTemplate x:Key="IconUpdateTemplate">
+           <StackPanel Orientation="Horizontal">
+               <iconPacks:PackIconBootstrapIcons Kind="ArrowClockwise" Margin="0,0,6,0"/>
+               <TextBlock Text="{Binding}" VerticalAlignment="Center"/>
+           </StackPanel>
+       </DataTemplate>
+
+       <DataTemplate x:Key="IconViewTemplate">
+           <StackPanel Orientation="Horizontal">
+               <iconPacks:PackIconBootstrapIcons Kind="Eye" Margin="0,0,6,0"/>
+               <TextBlock Text="{Binding}" VerticalAlignment="Center"/>
+           </StackPanel>
+       </DataTemplate>
+       <DataTemplate x:Key="IconCurrencyTemplate">
+           <StackPanel Orientation="Horizontal">
+               <iconPacks:PackIconBootstrapIcons Kind="CurrencyExchange" Margin="0,0,6,0"/>
+               <TextBlock Text="{Binding}" VerticalAlignment="Center"/>
+           </StackPanel>
+       </DataTemplate>
+       <DataTemplate x:Key="IconListTemplate">
+           <StackPanel Orientation="Horizontal">
+               <iconPacks:PackIconBootstrapIcons Kind="ClipboardData" Margin="0,0,6,0"/>
+               <TextBlock Text="{Binding}" VerticalAlignment="Center"/>
+           </StackPanel>
+       </DataTemplate>
+       <DataTemplate x:Key="IconChartTemplate">
+           <StackPanel Orientation="Horizontal">
+               <iconPacks:PackIconBootstrapIcons Kind="BarChart" Margin="0,0,6,0"/>
+               <TextBlock Text="{Binding}" VerticalAlignment="Center"/>
+           </StackPanel>
+       </DataTemplate>
+       <DataTemplate x:Key="IconGraphTemplate">
+           <StackPanel Orientation="Horizontal">
+               <iconPacks:PackIconBootstrapIcons Kind="GraphUpArrow" Margin="0,0,6,0"/>
+               <TextBlock Text="{Binding}" VerticalAlignment="Center"/>
+           </StackPanel>
+       </DataTemplate>
+       <DataTemplate x:Key="IconLoadTemplate">
+           <StackPanel Orientation="Horizontal">
+               <iconPacks:PackIconBootstrapIcons Kind="Folder2Open" Margin="0,0,6,0"/>
+               <TextBlock Text="{Binding}" VerticalAlignment="Center"/>
+           </StackPanel>
+       </DataTemplate>
+       <DataTemplate x:Key="IconExportCsvTemplate">
+           <StackPanel Orientation="Horizontal">
+               <iconPacks:PackIconBootstrapIcons Kind="FiletypeCsv" Margin="0,0,6,0"/>
+               <TextBlock Text="{Binding}" VerticalAlignment="Center"/>
+           </StackPanel>
+       </DataTemplate>
+       <DataTemplate x:Key="IconExportExcelTemplate">
+           <StackPanel Orientation="Horizontal">
+               <iconPacks:PackIconBootstrapIcons Kind="FiletypeXlsx" Margin="0,0,6,0"/>
+               <TextBlock Text="{Binding}" VerticalAlignment="Center"/>
+           </StackPanel>
+       </DataTemplate>
+       <DataTemplate x:Key="IconExportPdfTemplate">
+           <StackPanel Orientation="Horizontal">
+               <iconPacks:PackIconBootstrapIcons Kind="FiletypePdf" Margin="0,0,6,0"/>
+               <TextBlock Text="{Binding}" VerticalAlignment="Center"/>
+           </StackPanel>
+       </DataTemplate>
+
+       <DataTemplate x:Key="IconSaveTemplate">
+           <StackPanel Orientation="Horizontal">
+               <iconPacks:PackIconBootstrapIcons Kind="Save" Margin="0,0,6,0"/>
+               <TextBlock Text="{Binding}" VerticalAlignment="Center"/>
+           </StackPanel>
+       </DataTemplate>
+       <DataTemplate x:Key="IconResetTemplate">
+           <StackPanel Orientation="Horizontal">
+               <iconPacks:PackIconBootstrapIcons Kind="ArrowCounterclockwise" Margin="0,0,6,0"/>
+               <TextBlock Text="{Binding}" VerticalAlignment="Center"/>
+           </StackPanel>
+       </DataTemplate>
+       <DataTemplate x:Key="IconCloseTemplate">
+           <StackPanel Orientation="Horizontal">
+               <iconPacks:PackIconBootstrapIcons Kind="XLg" Margin="0,0,6,0"/>
+               <TextBlock Text="{Binding}" VerticalAlignment="Center"/>
+           </StackPanel>
+       </DataTemplate>
+       <DataTemplate x:Key="IconOkTemplate">
+           <StackPanel Orientation="Horizontal">
+               <iconPacks:PackIconBootstrapIcons Kind="CheckCircle" Margin="0,0,6,0"/>
+               <TextBlock Text="{Binding}" VerticalAlignment="Center"/>
+           </StackPanel>
+       </DataTemplate>
+       <DataTemplate x:Key="IconNotifyTemplate">
+           <StackPanel Orientation="Horizontal">
+               <iconPacks:PackIconBootstrapIcons Kind="Bell" Margin="0,0,6,0"/>
+               <TextBlock Text="{Binding}" VerticalAlignment="Center"/>
+           </StackPanel>
+       </DataTemplate>
+       <DataTemplate x:Key="IconCopyTemplate">
+           <StackPanel Orientation="Horizontal">
+               <iconPacks:PackIconBootstrapIcons Kind="Clipboard" Margin="0,0,6,0"/>
+               <TextBlock Text="{Binding}" VerticalAlignment="Center"/>
+           </StackPanel>
+       </DataTemplate>
+       <DataTemplate x:Key="IconBookTemplate">
+           <StackPanel Orientation="Horizontal">
+               <iconPacks:PackIconBootstrapIcons Kind="JournalText" Margin="0,0,6,0"/>
+               <TextBlock Text="{Binding}" VerticalAlignment="Center"/>
+           </StackPanel>
+       </DataTemplate>
+
+       <DataTemplate x:Key="IconTelephoneTemplate">
+           <StackPanel Orientation="Horizontal">
+               <iconPacks:PackIconBootstrapIcons Kind="Telephone" Margin="0,0,6,0"/>
+               <TextBlock Text="{Binding}" VerticalAlignment="Center"/>
+           </StackPanel>
+       </DataTemplate>
+       <DataTemplate x:Key="IconPinTemplate">
+           <StackPanel Orientation="Horizontal">
+               <iconPacks:PackIconBootstrapIcons Kind="PinAngle" Margin="0,0,6,0"/>
+               <TextBlock Text="{Binding}" VerticalAlignment="Center"/>
+           </StackPanel>
+       </DataTemplate>
+       <DataTemplate x:Key="IconGeoTemplate">
+           <StackPanel Orientation="Horizontal">
+               <iconPacks:PackIconBootstrapIcons Kind="GeoAlt" Margin="0,0,6,0"/>
+               <TextBlock Text="{Binding}" VerticalAlignment="Center"/>
+           </StackPanel>
+       </DataTemplate>
+       <DataTemplate x:Key="IconActivityTemplate">
+           <StackPanel Orientation="Horizontal">
+               <iconPacks:PackIconBootstrapIcons Kind="CardList" Margin="0,0,6,0"/>
+               <TextBlock Text="{Binding}" VerticalAlignment="Center"/>
+           </StackPanel>
+       </DataTemplate>
+       <DataTemplate x:Key="IconDocumentTemplate">
+           <StackPanel Orientation="Horizontal">
+               <iconPacks:PackIconBootstrapIcons Kind="FileEarmarkText" Margin="0,0,6,0"/>
+               <TextBlock Text="{Binding}" VerticalAlignment="Center"/>
+           </StackPanel>
+       </DataTemplate>
+       <DataTemplate x:Key="IconSettingsTemplate">
+           <StackPanel Orientation="Horizontal">
+               <iconPacks:PackIconBootstrapIcons Kind="Gear" Margin="0,0,6,0"/>
+               <TextBlock Text="{Binding}" VerticalAlignment="Center"/>
+           </StackPanel>
+       </DataTemplate>
+       <DataTemplate x:Key="IconInfoTemplate">
+           <StackPanel Orientation="Horizontal">
+               <iconPacks:PackIconBootstrapIcons Kind="InfoCircle" Margin="0,0,6,0"/>
+               <TextBlock Text="{Binding}" VerticalAlignment="Center"/>
+           </StackPanel>
+       </DataTemplate>
+
+       <!-- Шаблоны для компактных кнопок-иконок (без подписи) -->
+       <DataTemplate x:Key="IconRepeatOnlyTemplate">
+           <iconPacks:PackIconBootstrapIcons Kind="ArrowRepeat"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+       </DataTemplate>
+       <DataTemplate x:Key="IconDeleteOnlyTemplate">
+            <iconPacks:PackIconBootstrapIcons Kind="Trash" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        </DataTemplate>
+        <DataTemplate x:Key="IconViewOnlyTemplate">
+           <iconPacks:PackIconBootstrapIcons Kind="Eye"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+       </DataTemplate>
+
+       <!-- ========================================================= -->
+       <!-- Единая визуальная система приложения                     -->
+       <!-- ========================================================= -->
+
+       <!-- Стиль заголовка шапки приложения -->
+       <Style x:Key="AppTitleText" TargetType="TextBlock">
+           <Setter Property="FontSize" Value="24"/>
+           <Setter Property="FontWeight" Value="Bold"/>
+           <Setter Property="Foreground" Value="{DynamicResource TextAccentBrush}"/>
+           <Setter Property="TextWrapping" Value="Wrap"/>
+       </Style>
+
+       <!-- Стиль подзаголовка шапки приложения -->
+       <Style x:Key="AppSubtitleText" TargetType="TextBlock">
+           <Setter Property="FontSize" Value="14"/>
+           <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+           <Setter Property="TextWrapping" Value="Wrap"/>
+           <Setter Property="Opacity" Value="0.85"/>
+       </Style>
+
+       <!-- Заголовки секций: единый стиль для всех заголовков -->
+       <Style x:Key="HeadingText" TargetType="TextBlock">
+           <Setter Property="FontSize" Value="16"/>
+           <Setter Property="FontWeight" Value="Bold"/>
+           <Setter Property="Margin" Value="0,0,0,10"/>
+           <Setter Property="TextWrapping" Value="Wrap"/>
+       </Style>
+
+       <!-- ========================================================= -->
+       <!-- Кнопки                                                    -->
+       <!-- ========================================================= -->
+
+       <!-- Базовый стиль кнопки: скругление 4px, отступы и состояния.
+            Явный ключ нужен, чтобы стили окон могли его наследовать. -->
+       <Style x:Key="AppButtonBase" TargetType="Button">
+           <Setter Property="Background" Value="{DynamicResource ButtonBackgroundBrush}"/>
+           <Setter Property="Foreground" Value="{DynamicResource OnAccentBrush}"/>
+           <Setter Property="FontSize" Value="12"/>
+           <Setter Property="Padding" Value="8,4"/>
+           <Setter Property="Margin" Value="4,2"/>
+           <Setter Property="MinWidth" Value="100"/>
+           <Setter Property="Cursor" Value="Hand"/>
+           <Setter Property="BorderThickness" Value="0"/>
+           <Setter Property="HorizontalContentAlignment" Value="Center"/>
+           <Setter Property="VerticalContentAlignment" Value="Center"/>
+           <Setter Property="Template">
+               <Setter.Value>
+                   <ControlTemplate TargetType="Button">
+                       <Border x:Name="Border"
+                               Background="{TemplateBinding Background}"
+                               BorderBrush="{TemplateBinding BorderBrush}"
+                               BorderThickness="{TemplateBinding BorderThickness}"
+                               CornerRadius="4"
+                               SnapsToDevicePixels="True">
+                           <Grid>
+                               <ContentPresenter Margin="{TemplateBinding Padding}"
+                                                 HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                 ContentSource="Content"
+                                                 RecognizesAccessKey="True"/>
+                               <!-- Оверлей состояний: затемняет цвет кнопки, сохраняя его тон -->
+                               <Border x:Name="StateOverlay"
+                                       Background="Transparent"
+                                       CornerRadius="4"/>
+                           </Grid>
+                       </Border>
+                       <ControlTemplate.Triggers>
+                           <Trigger Property="IsKeyboardFocused" Value="True">
+                               <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource OnAccentBrush}"/>
+                               <Setter TargetName="Border" Property="BorderThickness" Value="2"/>
+                           </Trigger>
+                           <Trigger Property="IsMouseOver" Value="True">
+                               <Setter TargetName="StateOverlay" Property="Background" Value="{DynamicResource OverlayDisabledBrush}"/>
+                           </Trigger>
+                           <Trigger Property="IsPressed" Value="True">
+                               <Setter TargetName="StateOverlay" Property="Background" Value="{DynamicResource OverlayPressedBrush}"/>
+                           </Trigger>
+                           <Trigger Property="IsEnabled" Value="False">
+                               <Setter TargetName="Border" Property="Opacity" Value="0.5"/>
+                           </Trigger>
+                       </ControlTemplate.Triggers>
+                   </ControlTemplate>
+               </Setter.Value>
+           </Setter>
+           <Style.Triggers>
+               <Trigger Property="IsEnabled" Value="False">
+                   <Setter Property="Cursor" Value="Arrow"/>
+               </Trigger>
+           </Style.Triggers>
+       </Style>
+
+       <!-- Неявный стиль: применяется ко всем кнопкам без явного стиля -->
+       <Style TargetType="Button" BasedOn="{StaticResource AppButtonBase}"/>
+
+       <!-- Акцентная кнопка: зелёный цвет для первичных действий.
+            Наследует AppButtonBase, поэтому визуально идентична остальным кнопкам. -->
+       <Style x:Key="AccentButton" TargetType="Button" BasedOn="{StaticResource AppButtonBase}">
+           <Setter Property="Background" Value="{DynamicResource AccentBrush}"/>
+           <Setter Property="Foreground" Value="{DynamicResource OnAccentBrush}"/>
+           <Setter Property="FontSize" Value="14"/>
+           <Setter Property="FontWeight" Value="Bold"/>
+           <Setter Property="Height" Value="40"/>
+           <Setter Property="MinWidth" Value="120"/>
+           <Setter Property="Padding" Value="8,4"/>
+           <Setter Property="Margin" Value="4,2"/>
+       </Style>
+
+       <!-- Компактная кнопка-иконка без подписи (столбец «Действия» истории УНП).
+            Квадрат 28×28 с иконкой по центру — вписывается в строку DataGrid
+            (RowHeight=34). MinWidth=0 обязателен: базовый MinWidth=100 растягивал
+            кнопку-иконку в пустой синий прямоугольник. Наследует AppButtonBase,
+            поэтому наведение, нажатие и контраст иконки (OnAccentBrush на
+            акцентном фоне) сохраняются в обеих темах. -->
+       <Style x:Key="IconButton" TargetType="Button" BasedOn="{StaticResource AppButtonBase}">
+           <Setter Property="MinWidth" Value="0"/>
+           <Setter Property="Width" Value="28"/>
+           <Setter Property="Height" Value="28"/>
+           <Setter Property="Padding" Value="0"/>
+           <Setter Property="Margin" Value="2"/>
+           <Setter Property="VerticalAlignment" Value="Center"/>
+           <Setter Property="HorizontalContentAlignment" Value="Center"/>
+           <Setter Property="VerticalContentAlignment" Value="Center"/>
+       </Style>
+
+       <!-- ========================================================= -->
+       <!-- Таблицы DataGrid                                          -->
+       <!-- ========================================================= -->
+
+       <Style TargetType="DataGrid">
+           <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+           <Setter Property="RowBackground" Value="{DynamicResource CardBackgroundBrush}"/>
+           <Setter Property="AlternatingRowBackground" Value="{DynamicResource AltRowBackgroundBrush}"/>
+           <Setter Property="AlternationCount" Value="2"/>
+           <Setter Property="GridLinesVisibility" Value="Horizontal"/>
+           <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource GridLineBrush}"/>
+           <Setter Property="VerticalGridLinesBrush" Value="{DynamicResource GridLineBrush}"/>
+           <Setter Property="HeadersVisibility" Value="Column"/>
+           <Setter Property="ColumnHeaderHeight" Value="32"/>
+           <Setter Property="RowHeight" Value="34"/>
+           <Setter Property="FontSize" Value="12"/>
+           <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+           <Setter Property="BorderThickness" Value="1"/>
+       </Style>
+
+       <!-- Заголовки колонок DataGrid -->
+       <Style TargetType="DataGridColumnHeader">
+           <Setter Property="Background" Value="{DynamicResource HeaderBackgroundBrush}"/>
+           <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+           <Setter Property="FontWeight" Value="SemiBold"/>
+           <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+           <Setter Property="BorderThickness" Value="0,0,0,1"/>
+           <Setter Property="Padding" Value="8,4"/>
+           <Setter Property="HorizontalContentAlignment" Value="Left"/>
+           <Setter Property="VerticalContentAlignment" Value="Center"/>
+       </Style>
+
+       <!-- Ячейка таблицы: цвет текста из палитры (системный цвет делал текст
+            чёрным и в тёмной теме он был не виден), выделенная строка — акцентом. -->
+       <Style TargetType="DataGridCell">
+           <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+           <Setter Property="Background" Value="Transparent"/>
+           <Setter Property="BorderBrush" Value="Transparent"/>
+           <Setter Property="BorderThickness" Value="0"/>
+           <Setter Property="Padding" Value="8,4"/>
+           <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+           <Style.Triggers>
+               <Trigger Property="IsSelected" Value="True">
+                   <Setter Property="Background" Value="{DynamicResource AccentBrush}"/>
+                   <Setter Property="Foreground" Value="{DynamicResource OnAccentBrush}"/>
+               </Trigger>
+           </Style.Triggers>
+       </Style>
+
+       <!-- ========================================================= -->
+       <!-- Списки (ListBox)                                          -->
+       <!-- ========================================================= -->
+
+       <Style TargetType="ListBox">
+           <Setter Property="Background" Value="{DynamicResource CardBackgroundBrush}"/>
+           <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+           <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+           <Setter Property="BorderThickness" Value="1"/>
+           <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
+       </Style>
+
+       <!-- Пункт списка: собственная подсветка вместо системной (она давала
+            синий/серый фон, не согласованный с текстом палитры). -->
+       <Style TargetType="ListBoxItem">
+           <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+           <Setter Property="Background" Value="Transparent"/>
+           <Setter Property="Padding" Value="6,4"/>
+           <Setter Property="SnapsToDevicePixels" Value="True"/>
+           <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+           <Setter Property="VerticalContentAlignment" Value="Center"/>
+           <Setter Property="Template">
+               <Setter.Value>
+                   <ControlTemplate TargetType="ListBoxItem">
+                       <Border x:Name="Bd"
+                               Background="{TemplateBinding Background}"
+                               Padding="{TemplateBinding Padding}"
+                               SnapsToDevicePixels="True">
+                           <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                             VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                       </Border>
+                   </ControlTemplate>
+               </Setter.Value>
+           </Setter>
+           <Style.Triggers>
+               <Trigger Property="IsMouseOver" Value="True">
+                   <Setter Property="Background" Value="{DynamicResource TabHoverBrush}"/>
+               </Trigger>
+               <Trigger Property="IsSelected" Value="True">
+                   <Setter Property="Background" Value="{DynamicResource HeaderBackgroundBrush}"/>
+                   <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+               </Trigger>
+           </Style.Triggers>
+       </Style>
+
+       <!-- ========================================================= -->
+       <!-- Поля ввода                                                -->
+       <!-- ========================================================= -->
+
+       <Style TargetType="TextBox">
+           <Setter Property="Padding" Value="6,4"/>
+           <Setter Property="Margin" Value="4"/>
+           <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+           <Setter Property="BorderThickness" Value="1"/>
+           <Setter Property="Background" Value="{DynamicResource CardBackgroundBrush}"/>
+           <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+           <Setter Property="CaretBrush" Value="{DynamicResource TextPrimaryBrush}"/>
+       </Style>
+
+       <!-- Поле даты: системный DatePicker красит текст системным цветом, из-за
+            чего в тёмной теме дата была не видна. Цвета берём из палитры
+            ComboBox/полей ввода (светлая тема выглядит как раньше). -->
+       <Style TargetType="DatePicker">
+           <Setter Property="Background" Value="{DynamicResource ComboBoxBackgroundBrush}"/>
+           <Setter Property="Foreground" Value="{DynamicResource ComboBoxForegroundBrush}"/>
+           <Setter Property="BorderBrush" Value="{DynamicResource ComboBoxBorderBrush}"/>
+           <Setter Property="BorderThickness" Value="1"/>
+           <Setter Property="Padding" Value="4,2"/>
+           <Setter Property="VerticalContentAlignment" Value="Center"/>
+       </Style>
+
+       <!-- Внутреннее поле ввода DatePicker (там же подсказка-водяной знак) -->
+       <Style TargetType="DatePickerTextBox">
+           <Setter Property="Background" Value="Transparent"/>
+           <Setter Property="Foreground" Value="{DynamicResource ComboBoxForegroundBrush}"/>
+           <Setter Property="CaretBrush" Value="{DynamicResource ComboBoxForegroundBrush}"/>
+           <Setter Property="BorderThickness" Value="0"/>
+           <Setter Property="Padding" Value="0"/>
+           <Setter Property="VerticalContentAlignment" Value="Center"/>
+       </Style>
+
+       <!-- Индикатор выполнения: дорожка и полоса из палитры -->
+       <Style TargetType="ProgressBar">
+           <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
+           <Setter Property="Background" Value="{DynamicResource GridLineBrush}"/>
+           <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+           <Setter Property="BorderThickness" Value="0"/>
+       </Style>
+
+       <!-- ========================================================= -->
+       <!-- Выпадающие списки (ComboBox)                              -->
+       <!-- ========================================================= -->
+       <!-- Системные шаблоны ComboBox/ComboBoxItem берут цвета из
+            SystemColors (белый фон Popup, системная подсветка пункта), из-за
+            чего в тёмной теме текст списка сливался с белым фоном. Ниже оба
+            шаблона переписаны на палитру СК. -->
+
+       <!-- Пункт выпадающего списка: наведение и выбор не должны выглядеть одинаково.
+            Выбранный пункт - AccentBrush + OnAccentBrush, наведение - LightAccentBrush + TextPrimaryBrush. -->
+       <Style x:Key="AppComboBoxItemStyle" TargetType="ComboBoxItem">
+           <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+           <Setter Property="Background" Value="{DynamicResource CardBackgroundBrush}"/>
+           <Setter Property="Padding" Value="8,5"/>
+           <Setter Property="BorderThickness" Value="0"/>
+           <Setter Property="SnapsToDevicePixels" Value="True"/>
+           <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+           <Setter Property="VerticalContentAlignment" Value="Center"/>
+           <Setter Property="Template">
+               <Setter.Value>
+                   <ControlTemplate TargetType="ComboBoxItem">
+                       <Border x:Name="Bd"
+                               Background="{TemplateBinding Background}"
+                               BorderBrush="{TemplateBinding BorderBrush}"
+                               BorderThickness="{TemplateBinding BorderThickness}"
+                               Padding="{TemplateBinding Padding}"
+                               SnapsToDevicePixels="True">
+                           <ContentPresenter Content="{TemplateBinding Content}"
+                                             ContentTemplate="{TemplateBinding ContentTemplate}"
+                                             ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
+                                             ContentStringFormat="{TemplateBinding ContentStringFormat}"
+                                             HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                             VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                       </Border>
+                       <ControlTemplate.Triggers>
+                           <Trigger Property="IsEnabled" Value="False">
+                               <Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}"/>
+                           </Trigger>
+                       </ControlTemplate.Triggers>
+                   </ControlTemplate>
+               </Setter.Value>
+           </Setter>
+           <Style.Triggers>
+               <Trigger Property="IsHighlighted" Value="True">
+                   <Setter Property="Background" Value="{DynamicResource LightAccentBrush}"/>
+                   <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+               </Trigger>
+               <Trigger Property="IsSelected" Value="True">
+                   <Setter Property="Background" Value="{DynamicResource AccentBrush}"/>
+                   <Setter Property="Foreground" Value="{DynamicResource OnAccentBrush}"/>
+               </Trigger>
+               <Trigger Property="IsEnabled" Value="False">
+                   <Setter Property="Opacity" Value="0.5"/>
+               </Trigger>
+           </Style.Triggers>
+       </Style>
+
+
+       <!-- Шаблон выпадающего списка: Popup и рамка оформляются кистями
+            палитры, поэтому список читаем в обеих темах. Поддерживает оба
+            режима: обычный (ContentSite) и редактируемый (PART_EditableTextBox). -->
+       <ControlTemplate x:Key="AppComboBoxTemplate" TargetType="ComboBox">
+           <Grid x:Name="Root" SnapsToDevicePixels="True">
+               <Border x:Name="Bd"
+                       Background="{TemplateBinding Background}"
+                       BorderBrush="{TemplateBinding BorderBrush}"
+                       BorderThickness="{TemplateBinding BorderThickness}"
+                       CornerRadius="4">
+                   <Grid>
+                       <Grid.ColumnDefinitions>
+                           <ColumnDefinition Width="*"/>
+                           <ColumnDefinition Width="Auto"/>
+                       </Grid.ColumnDefinitions>
+
+                       <!-- Выбранный элемент (обычный режим) -->
+                       <ContentPresenter x:Name="ContentSite"
+                                         Grid.Column="0"
+                                         Margin="{TemplateBinding Padding}"
+                                         Content="{TemplateBinding SelectionBoxItem}"
+                                         ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                         ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
+                                         ContentStringFormat="{TemplateBinding SelectionBoxItemStringFormat}"
+                                         HorizontalAlignment="Left"
+                                         VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                         IsHitTestVisible="False"/>
+
+                       <!-- Поле ввода (редактируемый режим). Style="{x:Null}"
+                            отключает неявный стиль TextBox приложения, чтобы
+                            внутри списка не появлялась вторая рамка. -->
+                       <TextBox x:Name="PART_EditableTextBox"
+                                Grid.Column="0"
+                                Margin="{TemplateBinding Padding}"
+                                Padding="0"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Foreground="{TemplateBinding Foreground}"
+                                CaretBrush="{TemplateBinding Foreground}"
+                                HorizontalAlignment="Stretch"
+                                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                IsReadOnly="{TemplateBinding IsReadOnly}"
+                                Visibility="Collapsed"
+                                Style="{x:Null}"/>
+
+                       <ToggleButton x:Name="ToggleButton"
+                                     Grid.Column="1"
+                                     Focusable="False"
+                                     ClickMode="Press"
+                                     Cursor="Hand"
+                                     Background="Transparent"
+                                     BorderThickness="0"
+                                     IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
+                           <ToggleButton.Template>
+                               <ControlTemplate TargetType="ToggleButton">
+                                   <Border Background="{TemplateBinding Background}">
+                                       <iconPacks:PackIconBootstrapIcons Kind="ChevronDown"
+                                                                         Width="12" Height="12"
+                                                                         HorizontalAlignment="Right"
+                                                                         VerticalAlignment="Center"
+                                                                         Margin="0,0,8,0"/>
+                                   </Border>
+                               </ControlTemplate>
+                           </ToggleButton.Template>
+                       </ToggleButton>
+                   </Grid>
+               </Border>
+               <Popup x:Name="PART_Popup"
+                      AllowsTransparency="True"
+                      Placement="Bottom"
+                      Focusable="False"
+                      PopupAnimation="Slide"
+                      IsOpen="{TemplateBinding IsDropDownOpen}">
+                   <Border Margin="0,2,0,0"
+                           CornerRadius="4"
+                           SnapsToDevicePixels="True"
+                           MinWidth="{Binding ActualWidth, ElementName=Root}"
+                           MaxHeight="{TemplateBinding MaxDropDownHeight}"
+                           Background="{DynamicResource CardBackgroundBrush}"
+                           BorderBrush="{DynamicResource ComboBoxBorderBrush}"
+                           BorderThickness="1">
+                       <ScrollViewer Margin="2">
+                           <ItemsPresenter KeyboardNavigation.DirectionalNavigation="Contained"/>
+                       </ScrollViewer>
+                   </Border>
+               </Popup>
+           </Grid>
+           <ControlTemplate.Triggers>
+               <Trigger Property="IsEditable" Value="True">
+                   <Setter TargetName="ContentSite" Property="Visibility" Value="Collapsed"/>
+                   <Setter TargetName="PART_EditableTextBox" Property="Visibility" Value="Visible"/>
+               </Trigger>
+               <Trigger Property="IsMouseOver" Value="True">
+                   <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+               </Trigger>
+               <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                   <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+               </Trigger>
+               <Trigger Property="IsEnabled" Value="False">
+                   <Setter TargetName="Bd" Property="Opacity" Value="0.5"/>
+               </Trigger>
+           </ControlTemplate.Triggers>
+       </ControlTemplate>
+
+       <Style TargetType="ComboBox">
+           <Setter Property="Padding" Value="6,4"/>
+           <Setter Property="Margin" Value="4"/>
+           <Setter Property="BorderBrush" Value="{DynamicResource ComboBoxBorderBrush}"/>
+           <Setter Property="BorderThickness" Value="1"/>
+           <Setter Property="Background" Value="{DynamicResource ComboBoxBackgroundBrush}"/>
+           <Setter Property="Foreground" Value="{DynamicResource ComboBoxForegroundBrush}"/>
+           <Setter Property="HorizontalContentAlignment" Value="Left"/>
+           <Setter Property="VerticalContentAlignment" Value="Center"/>
+           <Setter Property="SnapsToDevicePixels" Value="True"/>
+           <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto"/>
+           <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
+           <Setter Property="ItemContainerStyle" Value="{StaticResource AppComboBoxItemStyle}"/>
+           <Setter Property="Template" Value="{StaticResource AppComboBoxTemplate}"/>
+       </Style>
+   </Application.Resources>
 </Application>

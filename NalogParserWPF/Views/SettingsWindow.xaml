@@ -1,0 +1,198 @@
+<Window x:Class="NalogParserWPF.Views.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:viewModels="clr-namespace:NalogParserWPF.ViewModels"
+        xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+        Title="Настройки приложения"
+        Height="600" Width="700"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="CanResize"
+        WindowStyle="SingleBorderWindow"
+        MinHeight="500" MinWidth="560"
+        Background="{DynamicResource WindowBackgroundBrush}"
+        KeyDown="Window_KeyDown">
+
+    <Window.Resources>
+        <Style x:Key="SettingsButton" TargetType="Button" BasedOn="{StaticResource AppButtonBase}">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Height" Value="38"/>
+            <Setter Property="MinWidth" Value="120"/>
+        </Style>
+
+        <Style x:Key="FieldLabel" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextAccentBrush}"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,0,10,0"/>
+        </Style>
+
+        <Style x:Key="FieldTextBox" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Padding" Value="8,0"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="15">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Шапка приложения с логотипом -->
+        <Grid Grid.Row="0" Margin="0,0,0,12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Image Source="sk-logo-2.png"
+                   Width="56" Height="56"
+                   Stretch="Uniform"
+                   VerticalAlignment="Center"
+                   Margin="0,0,12,0"/>
+
+            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                <TextBlock Text="Следственный комитет Республики Беларусь"
+                           Style="{StaticResource AppTitleText}"/>
+                <TextBlock
+                           Style="{StaticResource AppSubtitleText}"><Run Language="ru-ru" Text="Информация из официальных источников"/></TextBlock>
+            </StackPanel>
+            <Image Grid.Row="0"
+                Source="/sk-logo-2.png"
+                Width="80" Height="80"
+                Stretch="Uniform"
+                HorizontalAlignment="Center"
+                Margin="0,5,0,10"/>
+        </Grid>
+
+        <!-- Заголовок -->
+        <Border Grid.Row="1"
+                Background="{DynamicResource AccentBrush}"
+                BorderBrush="{DynamicResource SecondaryBrush}"
+                BorderThickness="0,0,0,3"
+                CornerRadius="8"
+                Padding="10"
+                Margin="0,0,0,15">
+            <TextBlock
+                       FontSize="18"
+                       FontWeight="Bold"
+                       Foreground="{DynamicResource OnAccentBrush}"
+                       HorizontalAlignment="Center">
+                <InlineUIContainer>
+                    <iconPacks:PackIconBootstrapIcons Kind="Gear" Width="20" Height="20" Margin="0,0,7,0"/>
+                </InlineUIContainer>
+                <Run Text="НАСТРОЙКИ ПРИЛОЖЕНИЯ"/>
+            </TextBlock>
+        </Border>
+
+        <!-- Форма -->
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <Grid Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="150"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Адрес API:" Style="{StaticResource FieldLabel}"/>
+                    <TextBox Grid.Column="1"
+                             Text="{Binding ApiUrl, Mode=OneWay}"
+                             IsReadOnly="True"
+                             Background="{DynamicResource InputBackgroundBrush}"
+                             Style="{StaticResource FieldTextBox}"
+                             ToolTip="Базовый адрес выбранного источника данных (только для просмотра)"/>
+                </Grid>
+
+                <Grid Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="150"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Таймаут (сек):" Style="{StaticResource FieldLabel}"/>
+                    <TextBox Grid.Column="1"
+                             Text="{Binding TimeoutSeconds, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource FieldTextBox}"/>
+                </Grid>
+
+                <Grid Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="150"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Кол-во попыток:" Style="{StaticResource FieldLabel}"/>
+                    <TextBox Grid.Column="1"
+                             Text="{Binding RetryCount, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource FieldTextBox}"/>
+                </Grid>
+
+                <Grid Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="150"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Источник API:" Style="{StaticResource FieldLabel}"/>
+                    <ComboBox Grid.Column="1"
+                              ItemsSource="{Binding AvailableApis}"
+                              DisplayMemberPath="DisplayTitle"
+                              SelectedValuePath="Key"
+                              SelectedValue="{Binding SelectedApi, Mode=TwoWay}"
+                              Height="32"
+                              FontSize="13"
+                              VerticalContentAlignment="Center"
+                              ToolTip="Источник данных по умолчанию для поиска и получения курсов"/>
+                </Grid>
+
+                <Grid Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="150"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Тема оформления:" Style="{StaticResource FieldLabel}"/>
+                    <ComboBox Grid.Column="1"
+                              SelectedValue="{Binding Theme, Mode=TwoWay}"
+                              SelectedValuePath="Tag"
+                              Height="32"
+                              FontSize="13"
+                              VerticalContentAlignment="Center"
+                              >
+                        <ComboBoxItem Content="Светлая" Tag="Light"/>
+                        <ComboBoxItem Content="Тёмная" Tag="Dark"/>
+                    </ComboBox>
+                </Grid>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Кнопки -->
+        <StackPanel Grid.Row="3"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Margin="0,10,0,0">
+            <Button Content="Сохранить"
+                        ContentTemplate="{StaticResource IconSaveTemplate}"
+                    Style="{StaticResource SettingsButton}"
+                    Background="{DynamicResource AccentBrush}"
+                    Command="{Binding SaveCommand}"/>
+            <Button Content="Сбросить"
+                        ContentTemplate="{StaticResource IconResetTemplate}"
+                    Style="{StaticResource SettingsButton}"
+                    Background="{DynamicResource SecondaryButtonBrush}"
+                    Command="{Binding ResetCommand}"/>
+            <Button Content="Отмена"
+                        ContentTemplate="{StaticResource IconCloseTemplate}"
+                    Style="{StaticResource SettingsButton}"
+                    Background="{DynamicResource DangerSoftBrush}"
+                    Command="{Binding CancelCommand}"/>
+            <TextBlock Text="(или нажмите Esc)"
+                       FontSize="12"
+                       Foreground="{DynamicResource TextSecondaryBrush}"
+                       VerticalAlignment="Center"
+                       Margin="10,0,0,0"/>
+        </StackPanel>
+    </Grid>
+</Window>

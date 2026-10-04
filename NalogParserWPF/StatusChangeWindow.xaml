@@ -1,82 +1,149 @@
-﻿<Window x:Class="NalogParserWPF.StatusChangeWindow"
+<Window x:Class="NalogParserWPF.StatusChangeWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="📢 Изменения статусов контрагентов" 
-        Height="400" Width="700"
+        xmlns:viewModels="clr-namespace:NalogParserWPF.ViewModels"
+        xmlns:converters="clr-namespace:NalogParserWPF.Converters"
+        xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+        Title="Изменения статусов контрагентов" 
+        Height="600" Width="900"
         WindowStartupLocation="CenterScreen"
         ResizeMode="CanResize"
-        MinHeight="300" MinWidth="500"
-        Background="#E8F4F4"
+        WindowStyle="SingleBorderWindow"
+        MinHeight="500" MinWidth="700"
+        Background="{DynamicResource WindowBackgroundBrush}"
         KeyDown="Window_KeyDown">
 
     <Window.Resources>
-        <Style x:Key="CloseButton" TargetType="Button">
-            <Setter Property="FontSize" Value="14"/>
+        <converters:BooleanToVisibilityConverter x:Key="BoolToVis"/>
+
+        <Style x:Key="MainButton" TargetType="Button" BasedOn="{StaticResource AppButtonBase}">
+            <Setter Property="FontSize" Value="13"/>
             <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Height" Value="35"/>
-            <Setter Property="Width" Value="120"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Margin" Value="5"/>
-            <Setter Property="Background" Value="#1A8B8B"/>
-            <Setter Property="Content" Value="✅ Понятно"/>
+            <Setter Property="MinWidth" Value="120"/>
+        </Style>
+
+        <Style x:Key="CheckButton" TargetType="Button" BasedOn="{StaticResource MainButton}">
+            <Setter Property="Background" Value="{DynamicResource AccentBrush}"/>
+            <Setter Property="Content" Value="Проверить статусы"/>
+            <Setter Property="ContentTemplate" Value="{StaticResource IconSearchTemplate}"/>
+        </Style>
+
+        <Style x:Key="CloseButton" TargetType="Button" BasedOn="{StaticResource MainButton}">
+            <Setter Property="Background" Value="{DynamicResource AccentBrush}"/>
+            <Setter Property="Content" Value="Понятно"/>
+            <Setter Property="ContentTemplate" Value="{StaticResource IconOkTemplate}"/>
         </Style>
     </Window.Resources>
 
     <Grid Margin="15">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
+        <!-- Шапка приложения с логотипом -->
+        <Grid Grid.Row="0" Margin="0,0,0,12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Image Source="sk-logo-2.png"
+                   Width="56" Height="56"
+                   Stretch="Uniform"
+                   VerticalAlignment="Center"
+                   Margin="0,0,12,0"/>
+
+            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                <TextBlock Text="Следственный комитет Республики Беларусь"
+                           Style="{StaticResource AppTitleText}"/>
+                <TextBlock Text="Проверка контрагентов по УНП"
+                           Style="{StaticResource AppSubtitleText}"/>
+            </StackPanel>
+        </Grid>
+
         <!-- Заголовок -->
-        <Border Grid.Row="0" 
-                Background="#1A8B8B" 
+        <Border Grid.Row="1" 
+                Background="{DynamicResource AccentBrush}" 
                 CornerRadius="8"
                 Padding="10"
                 Margin="0,0,0,15">
             <Grid>
-                <TextBlock Text="📢 ИЗМЕНЕНИЯ СТАТУСОВ КОНТРАГЕНТОВ"
-                           FontSize="18"
+                <TextBlock FontSize="18"
                            FontWeight="Bold"
-                           Foreground="White"
+                           Foreground="{DynamicResource OnAccentBrush}"
                            HorizontalAlignment="Center"
-                           VerticalAlignment="Center"/>
+                           VerticalAlignment="Center">
+                    <InlineUIContainer>
+                        <iconPacks:PackIconBootstrapIcons Kind="Bell" Width="20" Height="20" Margin="0,0,7,0"/>
+                    </InlineUIContainer>
+                    <Run Text="ИЗМЕНЕНИЯ СТАТУСОВ КОНТРАГЕНТОВ"/>
+                </TextBlock>
             </Grid>
         </Border>
 
+        <!-- Статус -->
+        <TextBlock Grid.Row="2"
+                   Text="{Binding StatusMessage}"
+                   FontSize="14"
+                   Foreground="{DynamicResource TextAccentBrush}"
+                   Margin="0,0,0,5"/>
+
+        <!-- Индикатор загрузки -->
+        <ProgressBar Grid.Row="3"
+                     Height="6"
+                     IsIndeterminate="{Binding IsLoading}"
+                     Visibility="{Binding IsLoading, Converter={StaticResource BoolToVis}}"
+                     Margin="0,0,0,10"/>
+
         <!-- Таблица изменений -->
         <DataGrid x:Name="dgChanges" 
-                  Grid.Row="1"
-                  AutoGenerateColumns="False"
-                  CanUserAddRows="False"
-                  CanUserDeleteRows="False"
-                  IsReadOnly="True"
-                  SelectionMode="Single"
-                  Background="White"
-                  BorderBrush="#1A8B8B"
-                  BorderThickness="1"
-                  Margin="0,0,0,10">
+                Grid.Row="4"
+                 ItemsSource="{Binding Items}"
+                 AutoGenerateColumns="False"
+                 CanUserAddRows="False"
+                 CanUserDeleteRows="False"
+                 IsReadOnly="True"
+                 SelectionMode="Single"
+                 Background="{DynamicResource CardBackgroundBrush}"
+                 BorderBrush="{DynamicResource AccentBrush}"
+                 BorderThickness="1"
+                 Margin="0,0,0,10"
+                 MouseDoubleClick="ChangesGrid_MouseDoubleClick">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="УНП" Binding="{Binding Unp}" Width="120"/>
-                <DataGridTextColumn Header="Наименование" Binding="{Binding FullName}" Width="*" MinWidth="200"/>
-                <DataGridTemplateColumn Header="Было" Width="120">
+                <DataGridTextColumn Header="Наименование" Binding="{Binding FullName}" Width="2*" MinWidth="200">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                            <Setter Property="ToolTip" Value="{Binding FullName}"/>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTemplateColumn Header="Было" Width="110">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <TextBlock Text="{Binding OldStatus}" 
                                        Foreground="{Binding OldStatusColor}"
-                                       FontWeight="SemiBold"/>
+                                       FontWeight="SemiBold"
+                                       TextTrimming="CharacterEllipsis"
+                                       ToolTip="{Binding OldStatus}"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTemplateColumn Header="Стало" Width="120">
+                <DataGridTemplateColumn Header="Стало" Width="110">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <TextBlock Text="{Binding NewStatus}" 
                                        Foreground="{Binding NewStatusColor}"
-                                       FontWeight="SemiBold"/>
+                                       FontWeight="SemiBold"
+                                       TextTrimming="CharacterEllipsis"
+                                       ToolTip="{Binding NewStatus}"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
@@ -84,16 +151,19 @@
             </DataGrid.Columns>
         </DataGrid>
 
-        <!-- Кнопка закрытия -->
-        <StackPanel Grid.Row="2" 
+        <!-- Кнопки -->
+        <StackPanel Grid.Row="5" 
                     Orientation="Horizontal" 
                     HorizontalAlignment="Right">
+            <Button x:Name="btnCheckStatuses"
+                    Style="{StaticResource CheckButton}"
+                    Command="{Binding CheckStatusesCommand}"/>
             <Button x:Name="btnClose"
                     Style="{StaticResource CloseButton}"
-                    Click="BtnClose_Click"/>
+                    Command="{Binding CloseCommand}" Click="btnClose_Click"/>
             <TextBlock Text="(или нажмите Esc для закрытия)"
                        FontSize="12"
-                       Foreground="#666"
+                       Foreground="{DynamicResource TextSecondaryBrush}"
                        VerticalAlignment="Center"
                        Margin="10,0,0,0"/>
         </StackPanel>

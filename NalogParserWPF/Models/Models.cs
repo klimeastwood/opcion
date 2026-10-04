@@ -6,60 +6,44 @@ namespace NalogParserWPF.Models
     // Модель ответа от API
     public class NalogResponse
     {
-        [JsonProperty("row")]
-        public CompanyRow Row { get; set; }
+        [JsonProperty("row", DefaultValueHandling = DefaultValueHandling.Populate)]
+        public CompanyRow Row { get; set; } = new();
     }
 
     public class CompanyRow
     {
         [JsonProperty("vunp")]
-        public string Unp { get; set; }
+        public string Unp { get; set; } = string.Empty;
 
         [JsonProperty("vnaimp")]
-        public string FullName { get; set; }
+        public string FullName { get; set; } = string.Empty;
 
         [JsonProperty("vnaimk")]
-        public string ShortName { get; set; }
+        public string ShortName { get; set; } = string.Empty;
 
         [JsonProperty("vpadres")]
-        public string Address { get; set; }
+        public string Address { get; set; } = string.Empty;
 
         [JsonProperty("dreg")]
-        public string RegistrationDate { get; set; }
+        public string RegistrationDate { get; set; } = string.Empty;
 
         [JsonProperty("nmns")]
-        public string InspectorateCode { get; set; }
+        public string InspectionCode { get; set; } = string.Empty;
 
         [JsonProperty("vmns")]
-        public string InspectorateName { get; set; }
+        public string InspectionName { get; set; } = string.Empty;
 
         [JsonProperty("ckodsost")]
-        public string StatusCode { get; set; }
+        public string StatusCode { get; set; } = string.Empty;
 
         [JsonProperty("vkods")]
-        public string StatusText { get; set; }
+        public string Status { get; set; } = string.Empty;
 
         [JsonProperty("dlikv")]
-        public string LiquidationDate { get; set; }
+        public string StatusChangeDate { get; set; } = string.Empty;
 
         [JsonProperty("vlikv")]
-        public string LiquidationReason { get; set; }
-
-        // Дополнительные поля для физлиц
-        [JsonProperty("vname")]
-        public string FirstName { get; set; }
-
-        [JsonProperty("vpatr")]
-        public string Patronymic { get; set; }
-
-        [JsonProperty("dbirth")]
-        public string BirthDate { get; set; }
-
-        [JsonProperty("docnum")]
-        public string DocumentNumber { get; set; }
-
-        [JsonProperty("idnum")]
-        public string IdNumber { get; set; }
+        public string LiquidationDate { get; set; } = string.Empty;
     }
 
     // Модель для хранения в БД
@@ -67,47 +51,27 @@ namespace NalogParserWPF.Models
     {
         public int Id { get; set; }
         public DateTime SearchDate { get; set; }
-        public string SearchType { get; set; } // "Legal" или "Physical"
-        public string SearchParams { get; set; } // JSON с параметрами поиска
-        public string ResultData { get; set; } // JSON с результатом
-        public string Unp { get; set; }
-        public string FullName { get; set; }
-        public string Status { get; set; }
+        public string SearchType { get; set; } = string.Empty; // "Legal" или "Physical"
+        public string SearchParams { get; set; } = string.Empty; // JSON с параметрами поиска
+        public string ResultData { get; set; } = string.Empty; // JSON с результатом
+        public string Unp { get; set; } = string.Empty;
+        public string FullName { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
         public bool IsActive { get; set; }
-        public string PreviousStatus { get; set; }
+        public string PreviousStatus { get; set; } = string.Empty;
         public DateTime? LastChecked { get; set; } // Добавляем поле
-    }
-
-    // Модель для отображения в истории
-    public class HistoryItem
-    {
-        public int Id { get; set; }
-        public string SearchDate { get; set; }
-        public string Type { get; set; }
-        public string SearchParams { get; set; }
-        public string FullName { get; set; }
-        public string Unp { get; set; }
-        public string Status { get; set; }
-        public string StatusColor { get; set; }
-        public bool IsActive { get; set; }
-        public string PreviousStatus { get; set; }
+        public string? UpdateInfo { get; set; } // Изменения, которые произошли при автопроверке
     }
 
     // Параметры поиска для юрлиц
     public class LegalSearchParams
     {
-        public string Unp { get; set; }
-        public string Name { get; set; }
-        public bool UseWildcard { get; set; }
+        public string? Unp { get; set; }
     }
 
     // Параметры поиска для физлиц
     public class PhysicalSearchParams
     {
-        public string Unp { get; set; }
-        public string Fio { get; set; }
-        public string Passport { get; set; }
-        public string IdNumber { get; set; }
-        public bool UseWildcard { get; set; }
+        public string? Unp { get; set; }
     }
 }

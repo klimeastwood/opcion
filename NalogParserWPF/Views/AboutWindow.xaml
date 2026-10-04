@@ -1,0 +1,110 @@
+<Window x:Class="NalogParserWPF.Views.AboutWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:viewModels="clr-namespace:NalogParserWPF.ViewModels"
+        Title="О программе"
+        Height="500" Width="550"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        WindowStyle="SingleBorderWindow"
+        Background="{DynamicResource WindowBackgroundBrush}"
+        Foreground="{DynamicResource TextPrimaryBrush}">
+
+    <Window.Resources>
+        <Style x:Key="AboutTitle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+        </Style>
+
+        <Style x:Key="AboutLabel" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
+            <Setter Property="Margin" Value="0,0,0,0"/>
+        </Style>
+
+        <Style x:Key="AboutValue" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="30,26,30,26" RenderTransformOrigin="0.493,0.447">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Логотип -->
+        <Image Grid.Row="0"
+               Source="/sk-logo-2.png"
+               Width="80" Height="80"
+               Stretch="Uniform"
+               HorizontalAlignment="Center"
+               Margin="0,0,0,15"/>
+
+        <!-- Название программы -->
+        <TextBlock Grid.Row="1"
+                   Style="{StaticResource AboutTitle}"
+                   HorizontalAlignment="Center"
+                   Margin="0,0,0,5" Width="420"><Run Text="ОПЦИОН - Оперативное Получение Ценной Информации Официально и Надежно"/></TextBlock>
+
+        <!-- Версия -->
+        <StackPanel Grid.Row="2"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Center"
+                    Margin="0,5,0,15">
+            <TextBlock Text="Версия: " Style="{StaticResource AboutLabel}"/>
+            <TextBlock Text="{Binding Version}" Style="{StaticResource AboutValue}" Margin="0,0,0,0"/>
+        </StackPanel>
+
+        <!-- Линия-разделитель -->
+        <Border Grid.Row="3"
+                Height="1"
+                Background="{DynamicResource BorderBrush}"
+                Margin="0,0,0,15"/>
+
+        <!-- Разработчик -->
+        <StackPanel Grid.Row="4" Margin="0,5,0,10">
+            <TextBlock Text="Разработчик:" Style="{StaticResource AboutLabel}" Height="20"/>
+            <TextBlock Text="Климято Павел Викторович, Институт СК, КОЦРПС"
+                       Style="{StaticResource AboutValue}"
+                       FontWeight="Normal"
+                       Margin="0,2,0,0"/>
+        </StackPanel>
+
+        <!-- Описание -->
+        <StackPanel Grid.Row="5" Margin="0,5,0,10">
+            <TextBlock Text="Описание:" Style="{StaticResource AboutLabel}"/>
+            <TextBlock Text="Приложение для проверки контрагентов по УНП через API grp.nalog.gov.by, для получения информации о курсах валют по API Национального Банка Республики Беларусь и т.д."
+                       Style="{StaticResource AboutValue}"
+                       FontWeight="Normal"
+                       Margin="0,2,0,0"/>
+        </StackPanel>
+
+        <!-- Линия-разделитель -->
+        <Border Grid.Row="6"
+                Height="1"
+                Background="{DynamicResource BorderBrush}"
+                Margin="0,5,0,15"/>
+
+        <!-- Кнопка Закрыть -->
+        <Button Grid.Row="7"
+                Content="Закрыть"
+                Style="{StaticResource AccentButton}"
+                Width="120"
+                Height="NaN"
+                HorizontalAlignment="Center"
+                Click="CloseButton_Click" Margin="0,2,0,22"/>
+    </Grid>
+</Window>

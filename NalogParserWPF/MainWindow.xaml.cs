@@ -1,17 +1,201 @@
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Input;
+using NalogParserWPF.Helpers;
+using NalogParserWPF.Models;
 using NalogParserWPF.ViewModels;
 
 namespace NalogParserWPF
 {
     public partial class MainWindow : Window
     {
-        private readonly MainViewModel _viewModel;
-
         public MainWindow(MainViewModel viewModel)
         {
             InitializeComponent();
-            _viewModel = viewModel;
             DataContext = viewModel;
+        }
+
+        private void HistoryGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            DataGridHelper.CopyCellContent(sender, e);
+        }
+
+        /// <summary>
+        /// Выделение строк истории УНП: набор выделенных записей передаётся в ViewModel,
+        /// чтобы команда «Удалить выделенные» работала при множественном выделении
+        /// (DataGrid.SelectionMode = Extended).
+        /// </summary>
+        private void HistoryGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (sender is DataGrid grid && DataContext is MainViewModel viewModel)
+                viewModel.SelectedHistoryItems = grid.SelectedItems.OfType<HistoryItemViewModel>().ToList();
+        }
+
+        /// <summary>
+        /// Двойной клик по записи истории госстатистики: параметры запроса (показатель, рубрика
+        /// и период) восстанавливаются из локальной базы данных приложения.
+        /// </summary>
+        private void BelstatHistoryListBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is not ListBox listBox || listBox.DataContext is not BelstatViewModel viewModel)
+                return;
+
+            if (listBox.SelectedItem is not BelstatHistoryItem item)
+                return;
+
+            if (viewModel.LoadFromHistoryCommand.CanExecute(item))
+            {
+                viewModel.LoadFromHistoryCommand.Execute(item);
+                e.Handled = true;
+            }
+        }
+
+        /// <summary>
+        /// Копирование значения ячейки в буфер обмена по двойному клику
+        /// (таблицы курсов валют: все валюты на дату и динамика за период).
+        /// </summary>
+        private void DataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            DataGridHelper.CopyCellContent(sender, e);
+        }
+
+        private void UnpComboBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key != Key.Enter || e.KeyboardDevice.Modifiers == ModifierKeys.Shift)
+                return;
+
+            var viewModel = DataContext as MainViewModel;
+            if (viewModel?.SearchCommand.CanExecute(null) == true)
+                viewModel.SearchCommand.Execute(null);
+        }
+
+        private void UnpComboBox_DropDownClosed(object sender, System.EventArgs e)
+        {
+            if (UnpComboBox.SelectedItem is not string unp || string.IsNullOrEmpty(unp))
+                return;
+
+            var viewModel = DataContext as MainViewModel;
+            if (viewModel == null)
+                return;
+
+            if (!string.Equals(UnpComboBox.Text, unp, System.StringComparison.Ordinal))
+            {
+                viewModel.SearchQuery = unp;
+                return;
+            }
+
+            if (viewModel.SearchCommand.CanExecute(null))
+                viewModel.SearchCommand.Execute(null);
+        }
+
+        /// <summary>
+        /// Ленивая инициализация вкладки «Курсы валют»: справочник валют и история
+        /// запрашиваются один раз при первом отображении вкладки.
+        /// </summary>
+        private async void ExchangeRatesTab_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is not FrameworkElement element || element.DataContext is not ExchangeRateViewModel viewModel)
+                return;
+
+            try
+            {
+                await viewModel.InitializeAsync();
+            }
+            catch (System.Exception ex)
+            {
+                viewModel.StatusMessage = $"Ошибка инициализации вкладки курсов валют: {ex.Message}";
+            }
+        }
+
+        /// <summary>
+        /// Нажатие Enter в поле «Поиск валюты» применяет фильтр справочника
+        /// (то же действие, что и кнопка «Найти»).
+        /// </summary>
+        private void CurrencySearchBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key != Key.Enter)
+                return;
+
+            if (sender is FrameworkElement element && element.DataContext is ExchangeRateViewModel viewModel)
+            {
+                viewModel.ApplyCurrencyFilterCommand.Execute(null);
+                e.Handled = true;
+            }
+        }
+
+        /// <summary>
+        /// Ленивая инициализация вкладки «Госстатистика»: дерево рубрик и история
+        /// запросов загружаются один раз при первом отображении вкладки.
+        /// </summary>
+        private async void BelstatTab_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is not FrameworkElement element || element.DataContext is not BelstatViewModel viewModel)
+                return;
+
+            try
+            {
+                await viewModel.InitializeAsync();
+            }
+            catch (System.Exception ex)
+            {
+                viewModel.StatusMessage = $"Ошибка инициализации вкладки госстатистики: {ex.Message}";
+            }
+        }
+
+        /// <summary>
+        /// Нажатие Enter в поле «Поиск показателя» выполняет поиск по каталогу Белстата
+        /// (то же действие, что и кнопка «Найти»).
+        /// </summary>
+        private void BelstatSearchBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key != Key.Enter)
+                return;
+
+            if (sender is FrameworkElement element && element.DataContext is BelstatViewModel viewModel)
+            {
+                if (viewModel.SearchIndicatorsCommand.CanExecute(null))
+                    viewModel.SearchIndicatorsCommand.Execute(null);
+
+                e.Handled = true;
+            }
+        }
+
+        /// <summary>
+        /// Таблица госстатистики строится из DataTable, колонки которой названы значениями
+        /// измерений ответа SDMX-JSON. WPF формирует путь привязки из имени колонки, и символы
+        /// вроде точки (например, «г. Минск») такую привязку ломают — значение ячейки молча
+        /// не отображается. Поэтому путь переводится в индексную форму «[имя колонки]»,
+        /// которая корректно работает для DataRowView с любыми именами; заголовком колонки
+        /// остаётся имя из DataTable (оно уже уникально и содержит расшифровку измерения).
+        /// </summary>
+        private void BelstatDataGrid_AutoGeneratingColumn(object sender, DataGridAutoGeneratingColumnEventArgs e)
+        {
+            if (e.Column is DataGridBoundColumn boundColumn)
+            {
+                boundColumn.Binding = new Binding($"[{e.PropertyName}]")
+                {
+                    Mode = BindingMode.OneWay
+                };
+                boundColumn.MinWidth = 90;
+            }
+
+            e.Column.Header = e.PropertyName;
+        }
+
+        private void ProgressBar_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+
+        }
+
+        private void BatchSearchView_Loaded(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }

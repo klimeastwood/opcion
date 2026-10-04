@@ -12,8 +12,10 @@ namespace NalogParserWPF.Services
         Task<SearchHistory?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
         Task<List<SearchHistory>> GetByUnpAsync(string unp, CancellationToken cancellationToken = default);
         Task UpdateStatusAsync(int id, string newStatus, CancellationToken cancellationToken = default);
+        Task UpdateStatusAndInfoAsync(int id, string newStatus, string updateInfo, CancellationToken cancellationToken = default);
         Task DeleteAsync(int id, CancellationToken cancellationToken = default);
         Task ClearAllAsync(CancellationToken cancellationToken = default);
         Task<List<SearchHistory>> GetActiveUnpsAsync(CancellationToken cancellationToken = default);
+        Task<List<string>> GetDistinctUnpsAsync(CancellationToken cancellationToken = default);
     }
 }
