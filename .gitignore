@@ -27,3 +27,5 @@ build_out.txt
 **/bin/
 **/obj/
 .vs/
+
+PROJECT_CONTEXT.md
