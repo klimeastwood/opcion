@@ -1,4 +1,4 @@
-﻿# 🏛️ ОПЦИОН
+# 🏛️ ОПЦИОН
 
 > **WPF-приложение для проверки контрагентов по УНП, получения курсов валют НБ РБ и работы с государственной статистикой Белстата — с экспортом в PDF, Excel и CSV.**
 
@@ -11,7 +11,7 @@
 Приложение агрегирует данные из трёх официальных источников:
 
 | Источник | API | Назначение |
-|----------|-----|------------|
+| --- | --- | --- |
 | **Министерство по налогам и сборам РБ** | `grp.nalog.gov.by` | Проверка контрагентов по УНП |
 | **Национальный банк РБ** | `api.nbrb.by` | Курсы валют, динамика, история |
 | **Белстат** | `dataportal.belstat.gov.by` | Государственная статистика |
@@ -67,7 +67,7 @@
 ## 🛠️ Технологический стек
 
 | Категория | Технологии |
-|-----------|------------|
+| --- | --- |
 | **Платформа** | .NET 8, WPF |
 | **Архитектура** | MVVM, DI (Microsoft.Extensions.Hosting) |
 | **База данных** | SQLite (Microsoft.Data.Sqlite.Core) |
@@ -82,6 +82,8 @@
 ---
 
 ## 🏗️ Архитектура проекта
+
+```text
 NalogParserWPF/
 ├── Configuration/ # Настройки API и БД
 ├── Converters/ # XAML-конвертеры
@@ -98,20 +100,21 @@ NalogParserWPF/
 ├── appsettings.json # Конфигурация
 ├── zaglav.ico # Иконка (рукопожатие)
 └── PROJECT_CONTEXT.md # Контекст проекта для агента
-
+```
 
 ---
 
-## Быстрый старт
+## 🚀 Быстрый старт
 
-### Требования
+### 📋 Требования
 
 - Windows 10/11 (x64)
 - .NET 8 SDK (для сборки)
 - Visual Studio 2022 (опционально)
 
-### Сборка и запуск
+### 🔨 Сборка и запуск
 
+```bash
 # Клонировать репозиторий
 git clone https://github.com/klimeastwood/NalogParserWPF.git
 cd NalogParserWPF
@@ -121,18 +124,24 @@ dotnet build NalogParserWPF.sln
 
 # Запуск
 dotnet run --project NalogParserWPF/NalogParserWPF.csproj
-Портативная версия (релиз)
-powershell
+```
+
+#### 📦 Портативная версия (релиз)
+
+```powershell
 dotnet publish NalogParserWPF/NalogParserWPF.csproj `
   -c Release `
   -r win-x64 `
   --self-contained true `
   -p:PublishSingleFile=true `
   -o ./Publish
-Готовый opcion.exe (~150–200 МБ) лежит в папке Publish/. Скопируйте appsettings.json рядом с .exe.
+```
 
-### Конфигурация (appsettings.json)
-json
+Готовый `opcion.exe` (~150–200 МБ) лежит в папке `Publish/`. Скопируйте `appsettings.json` рядом с `.exe`.
+
+### ⚙️ Конфигурация (appsettings.json)
+
+```json
 {
   "ApiSettings": {
     "BaseUrl": "http://grp.nalog.gov.by/api/grp-public/data",
@@ -152,51 +161,76 @@ json
   "SelectedApi": "Nalog",
   "Theme": "Light"
 }
-### Документация API
-API Налоговой службы
-text
+```
+
+---
+
+## 📡 Документация API
+
+### 🧾 API Налоговой службы
+
+```http
 GET http://grp.nalog.gov.by/api/grp-public/data?unp={УНП}&charset=UTF-8&type=json
-API НБ РБ
-text
+```
+
+### 🏦 API НБ РБ
+
+```http
 GET https://api.nbrb.by/exrates/rates?ondate={дата}&periodicity=0
 GET https://api.nbrb.by/exrates/rates/{ISO}?parammode=2
 GET https://api.nbrb.by/exrates/rates/dynamics/{cur_id}
-API Белстата
-text
+```
+
+### 📈 API Белстата
+
+```http
 GET  .../rubric/rubricTreeNodeGet/0
 GET  .../rubric/rubricIndicatorsGet/{code}
 POST .../sdmx-api/indicator/values/SDMX-JSON/{code}
-Подробнее: Docs/BELSTAT_API_RESEARCH.md
+```
 
-### Вклад в проект
-#Fork репозитория
+Подробнее: [Docs/BELSTAT_API_RESEARCH.md](Docs/BELSTAT_API_RESEARCH.md)
 
-#Создайте ветку (git checkout -b feature/amazing-feature)
+---
 
-#Закоммитьте изменения (git commit -m 'Add amazing feature')
+## 🤝 Вклад в проект
 
-#Push (git push origin feature/amazing-feature)
+```bash
+# Fork репозитория
+# Создайте ветку (git checkout -b feature/amazing-feature)
+# Закоммитьте изменения (git commit -m 'Add amazing feature')
+# Push (git push origin feature/amazing-feature)
+# Откройте Pull Request
+```
 
-#Откройте Pull Request
+---
 
-### Лицензия
+## 📜 Лицензия
+
 Распространяется под лицензией MIT.
 
-### Автор
+---
+
+## 👤 Автор
+
 Климято Павел Викторович
 
 Институт СК, КОЦРПС
 
-### Благодарности
-QuestPDF — генерация PDF
+---
 
-EPPlus — работа с Excel
+## 🙏 Благодарности
 
-MahApps.Metro.IconPacks — иконки
+- QuestPDF — генерация PDF
+- EPPlus — работа с Excel
+- MahApps.Metro.IconPacks — иконки
+- FuzzySharp — нечёткий поиск
+- Polly — retry-политики
 
-FuzzySharp — нечёткий поиск
-
-Polly — retry-политики
+---
 
 <div align="center">
+
 Сделано с ❤️ для правоохранителей Республики Беларусь
+
+</div>
