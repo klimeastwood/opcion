@@ -42,6 +42,8 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <!-- Панель фильтра таблицы изменений -->
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
@@ -101,9 +103,16 @@
                      Visibility="{Binding IsLoading, Converter={StaticResource BoolToVis}}"
                      Margin="0,0,0,10"/>
 
+        <!-- Фильтр таблицы изменений: поиск по УНП, наименованию, статусам и дате проверки. -->
+        <StackPanel Grid.Row="4" Style="{StaticResource TableFilterPanel}">
+            <TextBlock Style="{StaticResource TableFilterLabel}" Text="🔎 Фильтр:"/>
+            <TextBox x:Name="ChangesFilterBox" Style="{StaticResource TableFilterBox}"/>
+            <TextBlock Style="{StaticResource TableFilterHint}" Text="поиск по всем колонкам таблицы изменений"/>
+        </StackPanel>
+
         <!-- Таблица изменений -->
         <DataGrid x:Name="dgChanges" 
-                Grid.Row="4"
+                Grid.Row="5"
                  ItemsSource="{Binding Items}"
                  AutoGenerateColumns="False"
                  CanUserAddRows="False"
@@ -152,7 +161,7 @@
         </DataGrid>
 
         <!-- Кнопки -->
-        <StackPanel Grid.Row="5" 
+        <StackPanel Grid.Row="6" 
                     Orientation="Horizontal" 
                     HorizontalAlignment="Right">
             <Button x:Name="btnCheckStatuses"

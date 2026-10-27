@@ -173,7 +173,10 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <!-- Панель фильтра результатов поиска -->
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
+                    <!-- Кнопки действий под таблицей -->
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
@@ -207,8 +210,16 @@
                              Visibility="{Binding IsSearching, Converter={StaticResource BoolToVis}}"
                              Margin="5,0,5,5"/>
 
+                <!-- Фильтр результатов: строка поиска по всем колонкам таблицы
+                     (№, запрос, УНП, наименование, статус). -->
+                <StackPanel Grid.Row="2" Style="{StaticResource TableFilterPanel}">
+                    <TextBlock Style="{StaticResource TableFilterLabel}" Text="🔎 Фильтр:"/>
+                    <TextBox x:Name="BatchFilterBox" Style="{StaticResource TableFilterBox}"/>
+                    <TextBlock Style="{StaticResource TableFilterHint}" Text="поиск по всем колонкам результатов"/>
+                </StackPanel>
+
                 <DataGrid x:Name="dgBatchResults" 
-                          Grid.Row="2"
+                          Grid.Row="3"
                           MouseDoubleClick="DgBatchResults_MouseDoubleClick"
                           ItemsSource="{Binding Results}"
                           AutoGenerateColumns="False"
@@ -278,7 +289,7 @@
                     </DataGrid.Columns>
                 </DataGrid>
 
-                <StackPanel Grid.Row="3" 
+                <StackPanel Grid.Row="4" 
                             Orientation="Horizontal" 
                             HorizontalAlignment="Right"
                             Margin="5">

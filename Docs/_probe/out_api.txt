@@ -1,0 +1,27 @@
+ASSEMBLY: QuestPDF, Version=2026.7.2.0, Culture=neutral, PublicKeyToken=0f3c2b2315ff52c8
+TYPE QuestPDF.Elements.ShowIf : QuestPDF.Infrastructure.ContainerElement
+    PROP Predicate`1 VisibilityPredicate
+TYPE QuestPDF.Elements.ShowIfContext : System.Object
+    PROP Int32 PageNumber
+    PROP Nullable`1 TotalPages
+TYPE QuestPDF.Elements.ShowOnce : QuestPDF.Infrastructure.ContainerElement
+    METH Void ResetState(Boolean hardReset)
+    METH Object GetState()
+    METH Void SetState(Object state)
+TYPE QuestPDF.Elements.SkipOnce : QuestPDF.Infrastructure.ContainerElement
+    METH Void ResetState(Boolean hardReset)
+    METH Object GetState()
+    METH Void SetState(Object state)
+---- статические расширения с 'Show'/'Skip' в имени ----
+ConfigurationValidator.ShowIfNeeded() -> Void
+ElementExtensions.ShowOnce(IContainer element) -> IContainer
+ElementExtensions.SkipOnce(IContainer element) -> IContainer
+ElementExtensions.ShowEntire(IContainer element) -> IContainer
+ElementExtensions.ShowIf(IContainer element, Boolean condition) -> IContainer
+ElementExtensions.ShowIf(IContainer element, Predicate`1 predicate) -> IContainer
+GenerateExtensions.GeneratePdfAndShow(IDocument document) -> Void
+GenerateExtensions.GenerateXpsAndShow(IDocument document) -> Void
+PreviewerExtensions.ShowInPreviewer(IDocument document, Int32 port) -> Void
+PreviewerExtensions.ShowInPreviewerAsync(IDocument document, Int32 port, CancellationToken cancellationToken) -> Task
+CompanionExtensions.ShowInCompanion(IDocument document, Int32 port) -> Void
+CompanionExtensions.ShowInCompanionAsync(IDocument document, Int32 port, CancellationToken cancellationToken) -> Task

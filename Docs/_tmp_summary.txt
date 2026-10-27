@@ -1,0 +1,293 @@
+﻿RU TOP: header,dataSets,structure
+RU STRUCT TOP: name,description,dimensions,attributes
+RU DIM KEYS: dataset,series,observation
+
+--- RU observation dims ---
+ID=razrez_594 NAME=Territory of the Republic of Belarus
+    VALUE id=919140 name=Rogachev district
+    VALUE id=919221 name=Cherikov district
+    VALUE id=919089 name=Pruzhany district
+    VALUE id=919130 name=Zhlobin district
+    VALUE id=699961 name=Republic of Belarus
+    VALUE id=919187 name=Minsk district
+    VALUE id=919213 name=Krichev district
+    VALUE id=919188 name=Molodechno district
+    VALUE id=919145 name=Gomel, city of
+    VALUE id=919148 name=Volkovysk district
+    VALUE id=919105 name=Liozno district
+    VALUE id=919068 name=Vitebsk region
+    VALUE id=919093 name=Baranovichy, town of
+    VALUE id=919111 name=Senno district
+    VALUE id=919149 name=Voronovo district
+    VALUE id=919198 name=Cherven district
+    VALUE id=919112 name=Tolochin district
+    VALUE id=919156 name=Mosty district
+    VALUE id=919123 name=Bragin district
+    VALUE id=919069 name=Gomel region
+    VALUE id=919177 name=Berezino district
+    VALUE id=919108 name=Polotsk district
+    VALUE id=919203 name=Bobruysk district
+    VALUE id=919087 name=Malorita district
+    VALUE id=919083 name=Kamenets district
+    VALUE id=919082 name=Ivatsevichy district
+    VALUE id=919190 name=Nesvizh district
+    VALUE id=919136 name=Narovlya district
+    VALUE id=919100 name=Glubokoye district
+    VALUE id=919085 name=Luninets district
+    VALUE id=919104 name=Lepel district
+    VALUE id=919139 name=Rechitsa district
+    VALUE id=919116 name=Shumilino district
+    VALUE id=919160 name=Svisloch district
+    VALUE id=919184 name=Krupki district
+    VALUE id=919183 name=Kopyl district
+    VALUE id=919086 name=Lyakhovichy district
+    VALUE id=919193 name=Smolevichy district
+    VALUE id=919102 name=Dokshitsy district
+    VALUE id=919209 name=Klimovichy district
+    VALUE id=919208 name=Kirovsk district
+    VALUE id=919222 name=Shklov district
+    VALUE id=919179 name=Vileyka district
+    VALUE id=919129 name=Zhitkovichy district
+    VALUE id=919132 name=Korma district
+    VALUE id=919189 name=Miadel district
+    VALUE id=919185 name=Logoysk district
+    VALUE id=919162 name=Smorgon district
+    VALUE id=919165 name=Grodno, city of
+    VALUE id=919092 name=Brest, city of
+    VALUE id=919101 name=Gorodok district
+    VALUE id=919219 name=Khotimsk district
+    VALUE id=919070 name=Grodno region
+    VALUE id=919073 name=Mogilev region
+    VALUE id=919072 name=Minsk region
+    VALUE id=919090 name=Stolin district
+    VALUE id=919178 name=Borisov district
+    VALUE id=919067 name=Brest region
+    VALUE id=919119 name=Novopolotsk, town of
+    VALUE id=919195 name=Staryie Dorogi district
+    VALUE id=919103 name=Dubrovno district
+    VALUE id=919143 name=Chechersk district
+    VALUE id=919212 name=Krasnopolye district
+    VALUE id=919205 name=Glusk district
+    VALUE id=919163 name=Shchuchin district
+    VALUE id=919096 name=Beshenkovichy district
+    VALUE id=919191 name=Pukhovichy district
+    VALUE id=919135 name=Mozyr district
+    VALUE id=919080 name=Zhabinka district
+    VALUE id=919204 name=Bykhov district
+    VALUE id=919202 name=Belynichy district
+    VALUE id=919126 name=Gomel district
+    VALUE id=919109 name=Postavy district
+    VALUE id=919194 name=Soligorsk district
+    VALUE id=919081 name=Ivanovo district
+    VALUE id=919098 name=Verkhnedvinsk district
+    VALUE id=919182 name=Kletsk district
+    VALUE id=919076 name=Bereza district
+    VALUE id=919106 name=Miory district
+    VALUE id=919147 name=Berestovitsa district
+    VALUE id=919214 name=KrugloyÐµ district
+    VALUE id=919158 name=Ostrovets district
+    VALUE id=919115 name=Sharkovshchina district
+    VALUE id=919197 name=Uzda district
+    VALUE id=919153 name=Ivye district
+    VALUE id=919138 name=Petrikov district
+    VALUE id=919099 name=Vitebsk district
+    VALUE id=919094 name=Pinsk, town of
+    VALUE id=919125 name=Vetka district
+    VALUE id=919097 name=Braslav district
+    VALUE id=919071 name=Minsk city
+    VALUE id=919157 name=Novogrudok district
+    VALUE id=919216 name=Mstislavl district
+    VALUE id=919215 name=Mogilev district
+    VALUE id=919161 name=Slonim district
+    VALUE id=919137 name=Oktyabrsky district
+    VALUE id=919217 name=Osipovichy district
+    VALUE id=919154 name=Korelichy district
+    VALUE id=919078 name=Gantsevichy district
+    VALUE id=919180 name=Volozhin district
+    VALUE id=919110 name=Rossony district
+    VALUE id=919186 name=Lyuban district
+    VALUE id=919192 name=Slutsk district
+    VALUE id=919150 name=Grodno district
+    VALUE id=919088 name=Pinsk district
+    VALUE id=919107 name=Orsha district
+    VALUE id=919079 name=Drogichin district
+    VALUE id=919200 name=Zhodino, town of
+    VALUE id=919084 name=Kobrin district
+    VALUE id=919155 name=Lida district
+    VALUE id=919127 name=Dobrush district
+    VALUE id=919210 name=Klichev district
+    VALUE id=919159 name=Oshmyany district
+    VALUE id=919141 name=Svetlogorsk district
+    VALUE id=919134 name=Loyev district
+    VALUE id=919224 name=Mogilev, city of
+    VALUE id=919124 name=Buda-Koshelyovo district
+    VALUE id=919152 name=Zelva district
+    VALUE id=919207 name=Dribin district
+    VALUE id=919220 name=Chausy district
+    VALUE id=919151 name=Dyatlovo district
+    VALUE id=919128 name=Yelsk district
+    VALUE id=919118 name=Vitebsk, city of
+    VALUE id=919075 name=Baranovichy district
+    VALUE id=919142 name=Khoyniki district
+    VALUE id=919077 name=Brest district
+    VALUE id=919114 name=Chashniki district
+    VALUE id=919211 name=Kostyukovichy district
+    VALUE id=919206 name=Gorki district
+    VALUE id=919196 name=Stolbtsy district
+    VALUE id=919133 name=Lelchitsy district
+    VALUE id=919131 name=Kalinkovichy district
+    VALUE id=919225 name=Bobruysk, town of
+    VALUE id=919113 name=Ushachy district
+    VALUE id=919181 name=Dzerzhinsk district
+    VALUE id=919218 name=Slavgorod district
+ID=priznak_451 NAME=Type of area
+    VALUE id=507552 name=By all types
+    VALUE id=517608 name=Rural area
+    VALUE id=517602 name=Urban area
+ID=unit_10103000003 NAME=Units of measurement
+    VALUE id=206 name=units
+
+--- EN observation dims ---
+ID=razrez_594 NAME=Territory of the Republic of Belarus
+    VALUE id=919140 name=Rogachev district
+    VALUE id=919221 name=Cherikov district
+    VALUE id=919089 name=Pruzhany district
+    VALUE id=919130 name=Zhlobin district
+    VALUE id=699961 name=Republic of Belarus
+    VALUE id=919187 name=Minsk district
+    VALUE id=919213 name=Krichev district
+    VALUE id=919188 name=Molodechno district
+    VALUE id=919145 name=Gomel, city of
+    VALUE id=919148 name=Volkovysk district
+    VALUE id=919105 name=Liozno district
+    VALUE id=919068 name=Vitebsk region
+    VALUE id=919093 name=Baranovichy, town of
+    VALUE id=919111 name=Senno district
+    VALUE id=919149 name=Voronovo district
+    VALUE id=919198 name=Cherven district
+    VALUE id=919112 name=Tolochin district
+    VALUE id=919156 name=Mosty district
+    VALUE id=919123 name=Bragin district
+    VALUE id=919069 name=Gomel region
+    VALUE id=919177 name=Berezino district
+    VALUE id=919108 name=Polotsk district
+    VALUE id=919203 name=Bobruysk district
+    VALUE id=919087 name=Malorita district
+    VALUE id=919083 name=Kamenets district
+    VALUE id=919082 name=Ivatsevichy district
+    VALUE id=919190 name=Nesvizh district
+    VALUE id=919136 name=Narovlya district
+    VALUE id=919100 name=Glubokoye district
+    VALUE id=919085 name=Luninets district
+    VALUE id=919104 name=Lepel district
+    VALUE id=919139 name=Rechitsa district
+    VALUE id=919116 name=Shumilino district
+    VALUE id=919160 name=Svisloch district
+    VALUE id=919184 name=Krupki district
+    VALUE id=919183 name=Kopyl district
+    VALUE id=919086 name=Lyakhovichy district
+    VALUE id=919193 name=Smolevichy district
+    VALUE id=919102 name=Dokshitsy district
+    VALUE id=919209 name=Klimovichy district
+    VALUE id=919208 name=Kirovsk district
+    VALUE id=919222 name=Shklov district
+    VALUE id=919179 name=Vileyka district
+    VALUE id=919129 name=Zhitkovichy district
+    VALUE id=919132 name=Korma district
+    VALUE id=919189 name=Miadel district
+    VALUE id=919185 name=Logoysk district
+    VALUE id=919162 name=Smorgon district
+    VALUE id=919165 name=Grodno, city of
+    VALUE id=919092 name=Brest, city of
+    VALUE id=919101 name=Gorodok district
+    VALUE id=919219 name=Khotimsk district
+    VALUE id=919070 name=Grodno region
+    VALUE id=919073 name=Mogilev region
+    VALUE id=919072 name=Minsk region
+    VALUE id=919090 name=Stolin district
+    VALUE id=919178 name=Borisov district
+    VALUE id=919067 name=Brest region
+    VALUE id=919119 name=Novopolotsk, town of
+    VALUE id=919195 name=Staryie Dorogi district
+    VALUE id=919103 name=Dubrovno district
+    VALUE id=919143 name=Chechersk district
+    VALUE id=919212 name=Krasnopolye district
+    VALUE id=919205 name=Glusk district
+    VALUE id=919163 name=Shchuchin district
+    VALUE id=919096 name=Beshenkovichy district
+    VALUE id=919191 name=Pukhovichy district
+    VALUE id=919135 name=Mozyr district
+    VALUE id=919080 name=Zhabinka district
+    VALUE id=919204 name=Bykhov district
+    VALUE id=919202 name=Belynichy district
+    VALUE id=919126 name=Gomel district
+    VALUE id=919109 name=Postavy district
+    VALUE id=919194 name=Soligorsk district
+    VALUE id=919081 name=Ivanovo district
+    VALUE id=919098 name=Verkhnedvinsk district
+    VALUE id=919182 name=Kletsk district
+    VALUE id=919076 name=Bereza district
+    VALUE id=919106 name=Miory district
+    VALUE id=919147 name=Berestovitsa district
+    VALUE id=919214 name=KrugloyÐµ district
+    VALUE id=919158 name=Ostrovets district
+    VALUE id=919115 name=Sharkovshchina district
+    VALUE id=919197 name=Uzda district
+    VALUE id=919153 name=Ivye district
+    VALUE id=919138 name=Petrikov district
+    VALUE id=919099 name=Vitebsk district
+    VALUE id=919094 name=Pinsk, town of
+    VALUE id=919125 name=Vetka district
+    VALUE id=919097 name=Braslav district
+    VALUE id=919071 name=Minsk city
+    VALUE id=919157 name=Novogrudok district
+    VALUE id=919216 name=Mstislavl district
+    VALUE id=919215 name=Mogilev district
+    VALUE id=919161 name=Slonim district
+    VALUE id=919137 name=Oktyabrsky district
+    VALUE id=919217 name=Osipovichy district
+    VALUE id=919154 name=Korelichy district
+    VALUE id=919078 name=Gantsevichy district
+    VALUE id=919180 name=Volozhin district
+    VALUE id=919110 name=Rossony district
+    VALUE id=919186 name=Lyuban district
+    VALUE id=919192 name=Slutsk district
+    VALUE id=919150 name=Grodno district
+    VALUE id=919088 name=Pinsk district
+    VALUE id=919107 name=Orsha district
+    VALUE id=919079 name=Drogichin district
+    VALUE id=919200 name=Zhodino, town of
+    VALUE id=919084 name=Kobrin district
+    VALUE id=919155 name=Lida district
+    VALUE id=919127 name=Dobrush district
+    VALUE id=919210 name=Klichev district
+    VALUE id=919159 name=Oshmyany district
+    VALUE id=919141 name=Svetlogorsk district
+    VALUE id=919134 name=Loyev district
+    VALUE id=919224 name=Mogilev, city of
+    VALUE id=919124 name=Buda-Koshelyovo district
+    VALUE id=919152 name=Zelva district
+    VALUE id=919207 name=Dribin district
+    VALUE id=919220 name=Chausy district
+    VALUE id=919151 name=Dyatlovo district
+    VALUE id=919128 name=Yelsk district
+    VALUE id=919118 name=Vitebsk, city of
+    VALUE id=919075 name=Baranovichy district
+    VALUE id=919142 name=Khoyniki district
+    VALUE id=919077 name=Brest district
+    VALUE id=919114 name=Chashniki district
+    VALUE id=919211 name=Kostyukovichy district
+    VALUE id=919206 name=Gorki district
+    VALUE id=919196 name=Stolbtsy district
+    VALUE id=919133 name=Lelchitsy district
+    VALUE id=919131 name=Kalinkovichy district
+    VALUE id=919225 name=Bobruysk, town of
+    VALUE id=919113 name=Ushachy district
+    VALUE id=919181 name=Dzerzhinsk district
+    VALUE id=919218 name=Slavgorod district
+ID=priznak_451 NAME=Type of area
+    VALUE id=507552 name=By all types
+    VALUE id=517608 name=Rural area
+    VALUE id=517602 name=Urban area
+ID=unit_10103000003 NAME=Units of measurement
+    VALUE id=206 name=units

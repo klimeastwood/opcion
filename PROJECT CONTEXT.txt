@@ -1,0 +1,53 @@
+# PROJECT CONTEXT — NalogParserWPF
+
+## ОПИСАНИЕ
+WPF-приложение для проверки контрагентов по УНП через API grp.nalog.gov.by и получения курсов валют от НБ РБ.
+
+## СТЕК
+- .NET 8, WPF, MVVM
+- DI: Microsoft.Extensions.Hosting
+- БД: SQLite (Microsoft.Data.Sqlite.Core)
+- HTTP: IHttpClientFactory + Polly
+- PDF: QuestPDF
+- Excel: EPPlus
+- Логирование: ILogger
+- API НБ РБ: https://api.nbrb.by/exrates/ (раздел NbrbSettings в appsettings.json)
+
+## СТРУКТУРА ПРОЕКТА
+- /Converters — конвертеры (BooleanToVisibility и др.)
+- /Database — DatabaseHelper (SQLite), ExchangeHistoryRepository (история курсов валют)
+- /Helpers — RelayCommand, StatusHelper, StringHelper, UnpValidator, DataGridHelper
+- /Models — модели данных (Models.cs, NBRBModels.cs)
+- /Services — NalogApiService, NBRBApiService (НБ РБ), PdfExportService, InMemoryCacheService, NotificationService
+- /ViewModels — MainViewModel, BatchSearchViewModel, HistoryDetailViewModel, StatusChangeViewModel, SettingsViewModel, AboutViewModel, ExchangeRateViewModel
+- /Views — SettingsWindow, AboutWindow
+- /Configuration — AppConfig (ApiSettings, NbrbSettings, DatabaseSettings)
+
+## ЧТО УЖЕ СДЕЛАНО
+- Поиск по УНП с автодополнением
+- Массовый поиск с загрузкой файлов (.txt, .csv, .xlsx)
+- История поисков с автоперепроверкой
+- Экспорт в PDF, Excel, CSV
+- Настройки (URL, таймаут, тема)
+- Брендинг СК, окно "О программе"
+- Вкладка "💱 Курсы валют": три режима (курс одной валюты на дату, курсы всех валют на дату, динамика за период), экспорт в PDF/Excel/CSV, история запросов курсов
+
+## ТЕКУЩИЙ ЭТАП
+Шаг 3 — вкладка "💱 Курсы валют" (НБ РБ): реализация завершена, выполнена проверка headless-прогоном (реальный API НБ РБ + SQLite + экспортёры) — 24 из 24 проверок пройдено.
+
+## ЧТО ДЕЛАЕМ ДАЛЬШЕ
+- Ручная проверка вкладки в UI (диалоги сохранения файлов, светлая/тёмная тема, переключение режимов)
+- Опционально: график динамики курса вместо/вместе с таблицей
+- Опционально: калькулятор пересчёта суммы по курсу, сохранение избранных валют в настройках
+- Опционально: тестовый проект (xUnit) для NBRBApiService и ExchangeRateViewModel
+
+## ВАЖНЫЕ РЕШЕНИЯ
+- API Налоговой поддерживает ТОЛЬКО поиск по УНП
+- Все конвертеры находятся в /Converters
+- При добавлении новых вкладок — не трогать существующие
+- /exrates/currencies содержит архивные дубли: актуальная запись — максимальный Cur_ID по Cur_Abbreviation (иначе rates/dynamics по старому Cur_ID возвращают пусто)
+- rates/{id} для устаревшего Cur_ID возвращает null → fallback на rates/{ISO}?parammode=2
+- rates?ondate=&periodicity=0 отдаёт только валюты с ежедневной периодичностью (~30), а не весь справочник
+- НБ РБ не публикует курс на выходные/праздники (404) — в UI это предупреждение, а не ошибка
+- EPPlus: перед созданием документа обязателен ExcelPackage.License.SetNonCommercialPersonal("NalogParserWPF")
+- CSV пишется в UTF-8 с BOM и разделителем ";", PDF — QuestPDF (A4, цвета #1A5C5C / #1A8B8B)

@@ -103,7 +103,21 @@
              в индексную форму «[имя колонки]» в code-behind: имена измерений Белстата
              содержат точки и пробелы, которые ломают обычную привязку по имени. -->
         <Grid Grid.Row="2">
-            <DataGrid ItemsSource="{Binding ResultTable.DefaultView}"
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Фильтр таблицы результата: строка поиска по всем колонкам (измерения Белстата). -->
+            <StackPanel Grid.Row="0" Style="{StaticResource TableFilterPanel}">
+                <TextBlock Style="{StaticResource TableFilterLabel}" Text="🔎 Фильтр:"/>
+                <TextBox x:Name="ResultFilterBox" Style="{StaticResource TableFilterBox}"/>
+                <TextBlock Style="{StaticResource TableFilterHint}" Text="поиск по всем колонкам таблицы результата"/>
+            </StackPanel>
+
+            <DataGrid x:Name="ResultGrid"
+                      Grid.Row="1"
+                      ItemsSource="{Binding ResultTable.DefaultView}"
                       AutoGenerateColumns="True"
                       AutoGeneratingColumn="BelstatDataGrid_AutoGeneratingColumn"
                       IsReadOnly="True"
@@ -119,7 +133,8 @@
                       ToolTip="Двойной клик по ячейке — копировать значение"
                       Visibility="{Binding IsResultVisible, Converter={StaticResource BoolToVis}}"/>
 
-            <Border Padding="16"
+            <Border Grid.Row="1"
+                    Padding="16"
                     BorderBrush="{DynamicResource AccentBrush}"
                     BorderThickness="1"
                     CornerRadius="5"

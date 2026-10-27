@@ -1,0 +1,652 @@
+<Window x:Class="NalogParserWPF.Views.BelstatInterpretationWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:converters="clr-namespace:NalogParserWPF.Converters"
+        Title="📊 Интерпретация статистических данных"
+        Height="800" Width="1200"
+        MinHeight="560" MinWidth="900"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="CanResize"
+        WindowStyle="SingleBorderWindow"
+        Background="{DynamicResource WindowBackgroundBrush}"
+        Foreground="{DynamicResource TextPrimaryBrush}"
+        KeyDown="Window_KeyDown">
+
+    <Window.Resources>
+        <converters:BooleanToVisibilityConverter x:Key="BoolToVis"/>
+        <converters:InvertedBoolToVisibilityConverter x:Key="InvertedBoolToVis"/>
+        <converters:EmptyStringToVisibilityConverter x:Key="EmptyStringToVis"/>
+        <!-- Важность записи интерпретации → цвет текста (общая палитра с Excel и PDF) -->
+        <converters:InterpretationSeverityToBrushConverter x:Key="SeverityToBrush"/>
+
+        <!-- Кнопки окна наследуют единую систему кнопок приложения (AppButtonBase) -->
+        <Style x:Key="WindowButton" TargetType="Button" BasedOn="{StaticResource AppButtonBase}">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="MinWidth" Value="120"/>
+            <Setter Property="Margin" Value="6,0,0,0"/>
+        </Style>
+
+        <Style x:Key="RefreshButton" TargetType="Button" BasedOn="{StaticResource WindowButton}">
+            <Setter Property="Background" Value="{DynamicResource SecondaryButtonBrush}"/>
+        </Style>
+
+        <Style x:Key="ExportButton" TargetType="Button" BasedOn="{StaticResource WindowButton}">
+            <Setter Property="Background" Value="{DynamicResource ExportButtonBrush}"/>
+        </Style>
+
+        <Style x:Key="CloseButton" TargetType="Button" BasedOn="{StaticResource WindowButton}">
+            <Setter Property="Background" Value="{DynamicResource DangerSoftBrush}"/>
+            <Setter Property="Content" Value="Закрыть"/>
+            <Setter Property="ContentTemplate" Value="{StaticResource IconCloseTemplate}"/>
+        </Style>
+
+        <Style x:Key="SummaryLabel" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
+            <Setter Property="VerticalAlignment" Value="Top"/>
+            <Setter Property="Margin" Value="0,0,10,6"/>
+        </Style>
+
+        <Style x:Key="SummaryValue" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="Margin" Value="0,0,0,6"/>
+        </Style>
+
+        <Style x:Key="BlockHeader" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextAccentBrush}"/>
+            <Setter Property="Margin" Value="0,0,0,6"/>
+        </Style>
+
+        <!-- Запись интерпретации: тип выделен цветом важности, текст — обычным цветом -->
+        <DataTemplate x:Key="NoteTemplate">
+            <Border Margin="0,0,0,4"
+                    Padding="8,6"
+                    CornerRadius="4"
+                    BorderThickness="1"
+                    BorderBrush="{DynamicResource BorderBrush}"
+                    Background="{DynamicResource CardBackgroundBrush}">
+                <TextBlock TextWrapping="Wrap"
+                           Foreground="{DynamicResource TextPrimaryBrush}">
+                    <Run Text="{Binding Type, Mode=OneWay}"
+                         FontWeight="Bold"
+                         Foreground="{Binding Severity, Converter={StaticResource SeverityToBrush}}"/>
+                    <Run Text=": "/>
+                    <Run Text="{Binding Text, Mode=OneWay}"/>
+                </TextBlock>
+            </Border>
+        </DataTemplate>
+
+        <!-- Рекомендация для следственной работы: бледный фон важности (soft) и насыщенная
+             рамка с пометкой типа. Важность видна с одного взгляда, но текст рекомендации
+             остаётся обычным цветом палитры и читается на светлой теме. -->
+        <DataTemplate x:Key="RecommendationTemplate">
+            <Border Margin="0,0,0,16"
+                    Padding="8,6"
+                    CornerRadius="4"
+                    BorderThickness="1"
+                    BorderBrush="{Binding Severity, Converter={StaticResource SeverityToBrush}}"
+                    Background="{Binding Severity, Converter={StaticResource SeverityToBrush}, ConverterParameter=soft}">
+                <TextBlock TextWrapping="Wrap"
+                           Foreground="{DynamicResource TextPrimaryBrush}">
+                    <Run Text="{Binding Type, Mode=OneWay}"
+                         FontWeight="Bold"
+                         Foreground="{Binding Severity, Converter={StaticResource SeverityToBrush}}"/>
+                    <Run Text=": "/>
+                    <Run Text="{Binding Text, Mode=OneWay}"/>
+                </TextBlock>
+            </Border>
+        </DataTemplate>
+    </Window.Resources>
+
+    <Grid Margin="16,14,16,14">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <!-- Шапка с логотипом -->
+            <RowDefinition Height="Auto"/>
+            <!-- Показатель, период, статус разбора -->
+            <RowDefinition Height="*" MinHeight="240"/>
+            <!-- Вкладки «Простая» и «Расширенная» -->
+            <RowDefinition Height="Auto"/>
+            <!-- Кнопки действий -->
+        </Grid.RowDefinitions>
+
+        <!-- Шапка окна: фирменная подпись и логотип, как в главном окне -->
+        <Grid Grid.Row="0" Margin="0,0,0,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Image Source="/sk-logo-2.png"
+                   Width="48" Height="48"
+                   Stretch="Uniform"
+                   VerticalAlignment="Center"
+                   Margin="0,0,12,0"/>
+
+            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                <TextBlock Text="Следственный комитет Республики Беларусь"
+                           FontSize="18"
+                           FontWeight="Bold"
+                           Foreground="{DynamicResource TextAccentBrush}"
+                           TextWrapping="Wrap"/>
+                <TextBlock Text="Интерпретация статистических данных государственной статистики"
+                           FontSize="13"
+                           Foreground="{DynamicResource TextPrimaryBrush}"
+                           Opacity="0.85"
+                           TextWrapping="Wrap"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Показатель, период наблюдений и статус разбора -->
+        <Border Grid.Row="1"
+                Padding="12"
+                BorderBrush="{DynamicResource AccentBrush}"
+                BorderThickness="1"
+                CornerRadius="5"
+                Background="{DynamicResource PanelBackgroundBrush}">
+            <StackPanel>
+                <TextBlock Text="{Binding IndicatorName}"
+                           FontSize="15"
+                           FontWeight="Bold"
+                           Foreground="{DynamicResource TextAccentBrush}"
+                           TextWrapping="Wrap"/>
+
+                <TextBlock Text="{Binding SourceInfo}"
+                           FontSize="12"
+                           Foreground="{DynamicResource TextSecondaryBrush}"
+                           TextWrapping="Wrap"
+                           Margin="0,4,0,0"
+                           Visibility="{Binding SourceInfo, Converter={StaticResource EmptyStringToVis}}"/>
+
+                <TextBlock FontSize="12"
+                           Foreground="{DynamicResource TextSecondaryBrush}"
+                           TextWrapping="Wrap"
+                           Margin="0,4,0,0">
+                    <Run Text="{Binding PeriodText, Mode=OneWay}"/>
+                    <Run Text="{Binding PointsCountText, Mode=OneWay}"/>
+                </TextBlock>
+
+                <ProgressBar Height="6"
+                             Margin="0,8,0,0"
+                             IsIndeterminate="{Binding IsLoading}"
+                             Visibility="{Binding IsLoading, Converter={StaticResource BoolToVis}}"/>
+
+                <TextBlock Text="{Binding StatusMessage}"
+                           FontSize="12"
+                           Foreground="{DynamicResource TextAccentBrush}"
+                           TextWrapping="Wrap"
+                           Margin="0,6,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Две вкладки разбора: простая (среднее и отклонение) и расширенная
+             (тренд, аномалии, скачки, устойчивое изменение и рекомендации). -->
+        <TabControl Grid.Row="2"
+                    Margin="0,10,0,0"
+                    Visibility="{Binding HasData, Converter={StaticResource BoolToVis}}">
+            <TabItem Header="Простая интерпретация">
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <!-- Строка фильтра: строка поиска над таблицей значений по годам -->
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*" MinHeight="110"/>
+                        <RowDefinition Height="*" MinHeight="120"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Сводка простой интерпретации: среднее и стандартное отклонение -->
+                    <Border Grid.Row="0"
+                            Padding="12"
+                            BorderThickness="1"
+                            CornerRadius="5"
+                            BorderBrush="{DynamicResource BorderBrush}"
+                            Background="{DynamicResource CardBackgroundBrush}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" MinWidth="230"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0" Grid.Column="0"
+                                       Style="{StaticResource SummaryLabel}"
+                                       Text="Среднее значение за период"/>
+                            <TextBlock Grid.Row="0" Grid.Column="1"
+                                       Style="{StaticResource SummaryValue}"
+                                       Text="{Binding SimpleAverageText}"/>
+
+                            <TextBlock Grid.Row="1" Grid.Column="0"
+                                       Style="{StaticResource SummaryLabel}"
+                                       Text="Стандартное отклонение (σ)"/>
+                            <TextBlock Grid.Row="1" Grid.Column="1"
+                                       Style="{StaticResource SummaryValue}"
+                                       Text="{Binding SimpleDeviationText}"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Вывод по ряду: сколько лет выше/ниже среднего и есть ли аномалии -->
+                    <Border Grid.Row="1"
+                            Margin="0,10,0,0"
+                            Padding="12"
+                            BorderThickness="1"
+                            CornerRadius="5"
+                            BorderBrush="{DynamicResource BorderBrush}"
+                            Background="{DynamicResource CardBackgroundBrush}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource BlockHeader}"
+                                       Margin="0,0,0,4"
+                                       Text="Вывод по ряду"/>
+                            <TextBlock Text="{Binding SimpleConclusionText}"
+                                       FontSize="12"
+                                       TextWrapping="Wrap"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Фильтр таблицы значений по годам (простая интерпретация) -->
+                    <StackPanel Grid.Row="2" Margin="0,10,0,6">
+                        <StackPanel Style="{StaticResource TableFilterPanel}">
+                            <TextBlock Style="{StaticResource TableFilterLabel}" Text="🔎 Фильтр:"/>
+                            <TextBox x:Name="SimpleFilterBox" Style="{StaticResource TableFilterBox}"/>
+                            <TextBlock Style="{StaticResource TableFilterHint}" Text="поиск по всем колонкам таблицы значений"/>
+                        </StackPanel>
+                        <!-- Пояснение к таблице: значения не «по годам», а по разрезам. -->
+                        <TextBlock Style="{StaticResource TableFilterHint}"
+                                   TextWrapping="Wrap"
+                                   Margin="0,2,0,0"
+                                   Text="Данные представлены по разрезам. Каждое наблюдение — отдельный срез (территория, пол, возраст и т.д.)."/>
+                    </StackPanel>
+
+                    <!-- Значения по годам: отклонение от среднего, σ, тренд и отметка -->
+                    <DataGrid x:Name="SimplePointsGrid"
+                              Grid.Row="3"
+                              Margin="0,10,0,0"
+                              ItemsSource="{Binding SimplePoints}"
+                              AutoGenerateColumns="False"
+                              IsReadOnly="True"
+                              CanUserAddRows="False"
+                              CanUserDeleteRows="False"
+                              SelectionMode="Single"
+                              SelectionUnit="Cell"
+                              MouseDoubleClick="DataGrid_MouseDoubleClick"
+                              ToolTip="Двойной клик по ячейке — копировать значение">
+                        <DataGrid.Columns>
+                            <!-- Первая колонка — порядковый номер наблюдения, а не год: за один
+                                 год значений может быть несколько (по разным разрезам). -->
+                            <DataGridTextColumn Header="№ наблюдения" Binding="{Binding Year}" Width="70">
+                                <DataGridTextColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader"
+                                           BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
+                                        <Setter Property="ToolTip"
+                                                Value="Порядковый номер наблюдения. За один год может быть несколько значений — по разным разрезам (территория, пол, возраст и т.д.)."/>
+                                    </Style>
+                                </DataGridTextColumn.HeaderStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="Значение показателя" Binding="{Binding ValueDisplay}" Width="160"/>
+                            <DataGridTextColumn Header="Отклонение от среднего" Binding="{Binding DeviationDisplay}" Width="190"/>
+                            <DataGridTextColumn Header="Ст. отклонение (σ)" Binding="{Binding Sigma, StringFormat={}{0:0.00}}" Width="150"/>
+                            <!-- Направление «год к году» (↑ рост, ↓ снижение, → без изменения): знак
+                                 крупнее текста и по центру колонки, в подсказке — число наблюдений. -->
+                            <DataGridTextColumn Header="Направление" Binding="{Binding Trend}" Width="110">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource DataGridGlyphCell}">
+                                        <Setter Property="ToolTip"
+                                                Value="{Binding DataContext.PointsCountText, RelativeSource={RelativeSource AncestorType=DataGrid}}"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTemplateColumn Header="Отметка" Width="*">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding AnomalyMark}"
+                                                       FontWeight="Bold"
+                                                       Margin="0,0,6,0"
+                                                       Foreground="{Binding Severity, Converter={StaticResource SeverityToBrush}}"/>
+                                            <TextBlock Text="{Binding Note}"
+                                                       TextWrapping="Wrap"
+                                                       Foreground="{Binding Severity, Converter={StaticResource SeverityToBrush}}"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <!-- Примечания к годам и рекомендации для следственной работы -->
+                    <Grid Grid.Row="4" Margin="0,10,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="16"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Grid Grid.Column="0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0"
+                                       Style="{StaticResource BlockHeader}"
+                                       Margin="0,0,0,4"
+                                       Text="Примечания к годам"/>
+                            <ScrollViewer Grid.Row="1"
+                                          VerticalScrollBarVisibility="Auto"
+                                          HorizontalScrollBarVisibility="Disabled">
+                                <ItemsControl ItemsSource="{Binding SimpleNotes}"
+                                              ItemTemplate="{StaticResource NoteTemplate}"/>
+                            </ScrollViewer>
+                        </Grid>
+
+                        <Grid Grid.Column="2">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0"
+                                       Style="{StaticResource BlockHeader}"
+                                       Margin="0,0,0,4"
+                                       Text="Рекомендации для следственной работы"/>
+                            <ScrollViewer Grid.Row="1"
+                                          Padding="0,0,8,0"
+                                          VerticalAlignment="Stretch"
+                                          VerticalScrollBarVisibility="Auto"
+                                          HorizontalScrollBarVisibility="Disabled"
+                                          ScrollViewer.CanContentScroll="True">
+                                <ItemsControl ItemsSource="{Binding SimpleRecommendations}"
+                                              ItemTemplate="{StaticResource RecommendationTemplate}"
+                                              VirtualizingPanel.IsVirtualizing="True"
+                                              VirtualizingPanel.VirtualizationMode="Recycling">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <VirtualizingStackPanel/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </Grid>
+                    </Grid>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="Расширенная интерпретация">
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <!-- Строка фильтра: строка поиска над таблицей значений по годам -->
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*" MinHeight="110"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*" MinHeight="120"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Сводные статистики расширенного разбора -->
+                    <Border Grid.Row="0"
+                            Padding="12"
+                            BorderThickness="1"
+                            CornerRadius="5"
+                            BorderBrush="{DynamicResource BorderBrush}"
+                            Background="{DynamicResource CardBackgroundBrush}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" MinWidth="230"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0" Grid.Column="0"
+                                       Style="{StaticResource SummaryLabel}"
+                                       Text="Среднее значение за период"/>
+                            <TextBlock Grid.Row="0" Grid.Column="1"
+                                       Style="{StaticResource SummaryValue}"
+                                       Text="{Binding AdvancedAverageText}"/>
+
+                            <TextBlock Grid.Row="1" Grid.Column="0"
+                                       Style="{StaticResource SummaryLabel}"
+                                       Text="Стандартное отклонение (σ)"/>
+                            <TextBlock Grid.Row="1" Grid.Column="1"
+                                       Style="{StaticResource SummaryValue}"
+                                       Text="{Binding AdvancedDeviationText}"/>
+
+                            <TextBlock Grid.Row="2" Grid.Column="0"
+                                       Style="{StaticResource SummaryLabel}"
+                                       Text="Тренд ряда"/>
+                            <TextBlock Grid.Row="2" Grid.Column="1"
+                                       Style="{StaticResource SummaryValue}"
+                                       Text="{Binding AdvancedTrendText}"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Фильтр таблицы значений по годам (расширенная интерпретация) -->
+                    <StackPanel Grid.Row="1" Margin="0,10,0,6">
+                        <StackPanel Style="{StaticResource TableFilterPanel}">
+                            <TextBlock Style="{StaticResource TableFilterLabel}" Text="🔎 Фильтр:"/>
+                            <TextBox x:Name="AdvancedFilterBox" Style="{StaticResource TableFilterBox}"/>
+                            <TextBlock Style="{StaticResource TableFilterHint}" Text="поиск по всем колонкам таблицы значений"/>
+                        </StackPanel>
+                        <!-- Пояснение к таблице: значения не «по годам», а по разрезам. -->
+                        <TextBlock Style="{StaticResource TableFilterHint}"
+                                   TextWrapping="Wrap"
+                                   Margin="0,2,0,0"
+                                   Text="Данные представлены по разрезам. Каждое наблюдение — отдельный срез (территория, пол, возраст и т.д.)."/>
+                    </StackPanel>
+
+                    <!-- Значения по годам: отклонение, σ, тренд и отметка аномалии -->
+                    <DataGrid x:Name="AdvancedPointsGrid"
+                              Grid.Row="2"
+                              Margin="0,10,0,0"
+                              ItemsSource="{Binding AdvancedPoints}"
+                              AutoGenerateColumns="False"
+                              IsReadOnly="True"
+                              CanUserAddRows="False"
+                              CanUserDeleteRows="False"
+                              SelectionMode="Single"
+                              SelectionUnit="Cell"
+                              MouseDoubleClick="DataGrid_MouseDoubleClick"
+                              ToolTip="Двойной клик по ячейке — копировать значение">
+                        <DataGrid.Columns>
+                            <!-- Первая колонка — порядковый номер наблюдения, а не год: за один
+                                 год значений может быть несколько (по разным разрезам). -->
+                            <DataGridTextColumn Header="№ наблюдения" Binding="{Binding Year}" Width="70">
+                                <DataGridTextColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader"
+                                           BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
+                                        <Setter Property="ToolTip"
+                                                Value="Порядковый номер наблюдения. За один год может быть несколько значений — по разным разрезам (территория, пол, возраст и т.д.)."/>
+                                    </Style>
+                                </DataGridTextColumn.HeaderStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="Значение показателя" Binding="{Binding ValueDisplay}" Width="160"/>
+                            <DataGridTextColumn Header="Отклонение от среднего" Binding="{Binding DeviationDisplay}" Width="190"/>
+                            <DataGridTextColumn Header="Ст. отклонение (σ)" Binding="{Binding Sigma, StringFormat={}{0:0.00}}" Width="150"/>
+                            <!-- Направление «год к году» (↑ рост, ↓ снижение, → без изменения): знак
+                                 крупнее текста и по центру колонки, в подсказке — число наблюдений. -->
+                            <DataGridTextColumn Header="Направление" Binding="{Binding Trend}" Width="110">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource DataGridGlyphCell}">
+                                        <Setter Property="ToolTip"
+                                                Value="{Binding DataContext.PointsCountText, RelativeSource={RelativeSource AncestorType=DataGrid}}"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTemplateColumn Header="Отметка" Width="*">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding AnomalyMark}"
+                                                       FontWeight="Bold"
+                                                       Margin="0,0,6,0"
+                                                       Foreground="{Binding Severity, Converter={StaticResource SeverityToBrush}}"/>
+                                            <TextBlock Text="{Binding Note}"
+                                                       TextWrapping="Wrap"
+                                                       Foreground="{Binding Severity, Converter={StaticResource SeverityToBrush}}"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <!-- Устойчивое изменение и скачки «год к году» -->
+                    <Border Grid.Row="3"
+                            Margin="0,10,0,0"
+                            Padding="12"
+                            BorderThickness="1"
+                            CornerRadius="5"
+                            BorderBrush="{DynamicResource BorderBrush}"
+                            Background="{DynamicResource CardBackgroundBrush}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" MinWidth="230"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0" Grid.Column="0"
+                                       Style="{StaticResource SummaryLabel}"
+                                       Text="Скачки «год к году»"/>
+                            <TextBlock Grid.Row="0" Grid.Column="1"
+                                       Style="{StaticResource SummaryValue}"
+                                       Text="{Binding AdvancedJumpText}"/>
+
+                            <TextBlock Grid.Row="1" Grid.Column="0"
+                                       Style="{StaticResource SummaryLabel}"
+                                       Text="Устойчивое изменение"/>
+                            <TextBlock Grid.Row="1" Grid.Column="1"
+                                       Style="{StaticResource SummaryValue}"
+                                       Text="{Binding AdvancedSustainedText}"/>
+
+                            <TextBlock Grid.Row="2" Grid.Column="0"
+                                       Style="{StaticResource SummaryLabel}"
+                                       Text="Аномалии (более 2σ)"/>
+                            <TextBlock Grid.Row="2" Grid.Column="1"
+                                       Style="{StaticResource SummaryValue}"
+                                       Text="{Binding AdvancedAnomalyText}"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Примечания статистического анализа и рекомендации для следственной работы -->
+                    <Grid Grid.Row="4" Margin="0,10,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="16"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Grid Grid.Column="0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0"
+                                       Style="{StaticResource BlockHeader}"
+                                       Margin="0,0,0,4"
+                                       Text="Статистический анализ"/>
+                            <ScrollViewer Grid.Row="1"
+                                          VerticalScrollBarVisibility="Auto"
+                                          HorizontalScrollBarVisibility="Disabled">
+                                <ItemsControl ItemsSource="{Binding AdvancedNotes}"
+                                              ItemTemplate="{StaticResource NoteTemplate}"/>
+                            </ScrollViewer>
+                        </Grid>
+
+                        <Grid Grid.Column="2">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0"
+                                       Style="{StaticResource BlockHeader}"
+                                       Margin="0,0,0,4"
+                                       Text="Рекомендации для следственной работы"/>
+                            <ScrollViewer Grid.Row="1"
+                                          Padding="0,0,8,0"
+                                          VerticalAlignment="Stretch"
+                                          VerticalScrollBarVisibility="Auto"
+                                          HorizontalScrollBarVisibility="Disabled"
+                                          ScrollViewer.CanContentScroll="True">
+                                <ItemsControl ItemsSource="{Binding AdvancedRecommendations}"
+                                              ItemTemplate="{StaticResource RecommendationTemplate}"
+                                              VirtualizingPanel.IsVirtualizing="True"
+                                              VirtualizingPanel.VirtualizationMode="Recycling">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <VirtualizingStackPanel/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </Grid>
+                    </Grid>
+                </Grid>
+            </TabItem>
+        </TabControl>
+
+        <!-- Подсказка вместо вкладок, если разбор выполнить не удалось -->
+        <Border Grid.Row="2"
+                Padding="16"
+                BorderBrush="{DynamicResource AccentBrush}"
+                BorderThickness="1"
+                CornerRadius="5"
+                Background="{DynamicResource CardBackgroundBrush}"
+                Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVis}}">
+            <TextBlock Text="{Binding EmptyMessage}"
+                       FontSize="13"
+                       Foreground="{DynamicResource TextSecondaryBrush}"
+                       TextWrapping="Wrap"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"/>
+        </Border>
+
+        <!-- Обновление разбора, экспорт и закрытие окна. Команды экспорта сами
+             запрещают выполнение, если данных нет (CanExecute = HasData). -->
+        <StackPanel Grid.Row="3"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Margin="0,10,0,0">
+            <Button Style="{StaticResource RefreshButton}"
+                    Content="Обновить разбор"
+                    ContentTemplate="{StaticResource IconRefreshTemplate}"
+                    MinWidth="170"
+                    Margin="0"
+                    Command="{Binding RefreshCommand}"
+                    ToolTip="Повторить разбор текущей таблицы вкладки «Госстатистика»"/>
+            <Button Style="{StaticResource ExportButton}"
+                    Content="PDF"
+                    ContentTemplate="{StaticResource IconExportPdfTemplate}"
+                    Command="{Binding ExportPdfCommand}"
+                    ToolTip="Сохранить интерпретацию в PDF (сводка, разбор по годам, рекомендации)"/>
+            <Button Style="{StaticResource ExportButton}"
+                    Content="Excel"
+                    ContentTemplate="{StaticResource IconExportExcelTemplate}"
+                    Command="{Binding ExportExcelCommand}"
+                    ToolTip="Сохранить интерпретацию в Excel (листы «Простая» и «Расширенная»)"/>
+            <Button Style="{StaticResource CloseButton}"
+                    Click="CloseButton_Click"/>
+            <TextBlock Text="(или нажмите Esc для закрытия)"
+                       FontSize="12"
+                       Foreground="{DynamicResource TextSecondaryBrush}"
+                       VerticalAlignment="Center"
+                       Margin="10,0,0,0"/>
+        </StackPanel>
+    </Grid>
+</Window>

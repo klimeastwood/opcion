@@ -582,6 +582,8 @@
                 <Grid Margin="10">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
+                        <!-- Панель фильтра таблицы истории -->
+                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
@@ -600,8 +602,16 @@
 
                     <!-- Таблица истории. SelectionMode=Extended — выделение нескольких записей
                          (Ctrl/Shift) для массового удаления кнопкой «Удалить выделенные». -->
+                    <!-- Фильтр таблицы истории: поиск идёт одновременно по всем колонкам
+                         (УНП, наименование, статус, адрес, даты). -->
+                    <StackPanel Grid.Row="1" Style="{StaticResource TableFilterPanel}">
+                        <TextBlock Style="{StaticResource TableFilterLabel}" Text="🔎 Фильтр:"/>
+                        <TextBox x:Name="HistoryFilterBox" Style="{StaticResource TableFilterBox}"/>
+                        <TextBlock Style="{StaticResource TableFilterHint}" Text="поиск по всем колонкам таблицы истории"/>
+                    </StackPanel>
+
                     <DataGrid x:Name="HistoryGrid"
-                              Grid.Row="1"
+                              Grid.Row="2"
                               ItemsSource="{Binding HistoryItems}"
                               AutoGenerateColumns="False"
                               CanUserAddRows="False"
@@ -732,7 +742,7 @@
                     </DataGrid>
 
                     <!-- Кнопки действий с историей -->
-                    <StackPanel Grid.Row="2"
+                    <StackPanel Grid.Row="3"
                                 Orientation="Horizontal"
                                 HorizontalAlignment="Center"
                                 Margin="0,0,0,0">
@@ -976,8 +986,32 @@
                         </StackPanel>
                         <!-- Результаты -->
                         <Grid Grid.Row="4">
-                            <!-- Курс одной валюты на дату -->
-                            <Border Padding="12"
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- Фильтр таблицы «Курсы всех валют на дату» -->
+                            <StackPanel Grid.Row="0"
+                                        Style="{StaticResource TableFilterPanel}"
+                                        Visibility="{Binding IsAllRatesResultVisible, Converter={StaticResource BoolToVis}}">
+                                <TextBlock Style="{StaticResource TableFilterLabel}" Text="🔎 Фильтр:"/>
+                                <TextBox x:Name="AllRatesFilterBox" Style="{StaticResource TableFilterBox}"/>
+                                <TextBlock Style="{StaticResource TableFilterHint}" Text="поиск по коду и наименованию валюты"/>
+                            </StackPanel>
+
+                            <!-- Фильтр таблицы «Динамика курса за период» -->
+                            <StackPanel Grid.Row="0"
+                                        Style="{StaticResource TableFilterPanel}"
+                                        Visibility="{Binding IsDynamicsResultVisible, Converter={StaticResource BoolToVis}}">
+                                <TextBlock Style="{StaticResource TableFilterLabel}" Text="🔎 Фильтр:"/>
+                                <TextBox x:Name="DynamicsFilterBox" Style="{StaticResource TableFilterBox}"/>
+                                <TextBlock Style="{StaticResource TableFilterHint}" Text="поиск по дате и курсу"/>
+                            </StackPanel>
+
+                            <!-- Курс одной валюты на дату: плашка занимает и строку фильтра -->
+                            <Border Grid.Row="0" Grid.RowSpan="2"
+                                    Padding="12"
                                     BorderBrush="{DynamicResource AccentBrush}"
                                     BorderThickness="1"
                                     CornerRadius="5"
@@ -1027,7 +1061,9 @@
                                 </StackPanel>
                             </Border>
                             <!-- Курсы всех валют на дату -->
-                            <DataGrid ItemsSource="{Binding AllRatesOnDate}"
+                            <DataGrid x:Name="AllRatesGrid"
+                                      Grid.Row="1"
+                                      ItemsSource="{Binding AllRatesOnDate}"
                                       AutoGenerateColumns="False"
                                       IsReadOnly="True"
                                       CanUserAddRows="False"
@@ -1044,7 +1080,9 @@
                             </DataGrid>
 
                             <!-- Динамика курса за период -->
-                            <DataGrid ItemsSource="{Binding Dynamics}"
+                            <DataGrid x:Name="DynamicsGrid"
+                                      Grid.Row="1"
+                                      ItemsSource="{Binding Dynamics}"
                                       AutoGenerateColumns="False"
                                       IsReadOnly="True"
                                       CanUserAddRows="False"
@@ -1412,6 +1450,15 @@
                                             Padding="8,4"
                                             Command="{Binding OpenInNewWindowCommand}"
                                             ToolTip="Открыть таблицу результата в отдельном окне (крупный просмотр и экспорт)"/>
+                                    <!-- Интерпретация статистики: разбор ряда показателя (тренд, аномалии,
+                                         скачки, устойчивое изменение) и рекомендации в отдельном окне. -->
+                                    <Button Style="{StaticResource AccentButton}"
+                                            Content="Интерпретация"
+                                            ContentTemplate="{StaticResource IconGraphTemplate}"
+                                            MinWidth="180"
+                                            Padding="8,4"
+                                            Command="{Binding OpenInterpretationCommand}"
+                                            ToolTip="Интерпретация статистических данных: тренд, аномалии, скачки «год к году» и рекомендации для следственной работы"/>
                                 </WrapPanel>
                             </StackPanel>
                         </Border>
@@ -1453,7 +1500,23 @@
                              имена измерений Белстата содержат точки и пробелы, которые ломают
                              обычную привязку по имени колонки. -->
                         <Grid Grid.Row="5">
-                            <DataGrid ItemsSource="{Binding ResultTable.DefaultView}"
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- Фильтр таблицы показателя: отбор строк по любому измерению -->
+                            <StackPanel Grid.Row="0"
+                                        Style="{StaticResource TableFilterPanel}"
+                                        Visibility="{Binding IsResultVisible, Converter={StaticResource BoolToVis}}">
+                                <TextBlock Style="{StaticResource TableFilterLabel}" Text="🔎 Фильтр:"/>
+                                <TextBox x:Name="BelstatResultFilterBox" Style="{StaticResource TableFilterBox}"/>
+                                <TextBlock Style="{StaticResource TableFilterHint}" Text="поиск по всем колонкам таблицы показателя"/>
+                            </StackPanel>
+
+                            <DataGrid x:Name="BelstatResultGrid"
+                                      Grid.Row="1"
+                                      ItemsSource="{Binding ResultTable.DefaultView}"
                                       AutoGenerateColumns="True"
                                       AutoGeneratingColumn="BelstatDataGrid_AutoGeneratingColumn"
                                       IsReadOnly="True"
@@ -1468,7 +1531,8 @@
                                       MouseDoubleClick="DataGrid_MouseDoubleClick"
                                       ToolTip="Двойной клик по ячейке — копировать значение"
                                       Visibility="{Binding IsResultVisible, Converter={StaticResource BoolToVis}}"/>
-                            <Border Padding="16"
+                            <Border Grid.Row="1"
+                                    Padding="16"
                                     BorderBrush="{DynamicResource AccentBrush}"
                                     BorderThickness="1"
                                     CornerRadius="5"

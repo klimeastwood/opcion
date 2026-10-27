@@ -23,7 +23,15 @@ namespace NalogParserWPF.Services
         /// <summary>
         /// Экспорт таблицы данных государственной статистики (Белстат) в PDF.
         /// Таблица универсальная: набор колонок и строк формирует вызывающий код.
+        /// <paramref name="filterNote"/> — необязательная пометка о том, что выгружены не все строки
+        /// результата, а отобранные фильтром (пустая строка/отсутствие — пометка не выводится).
         /// </summary>
-        Task ExportBelstatDataAsync(string title, string subtitle, IReadOnlyList<string> headers, IReadOnlyList<string[]> rows, string filePath, CancellationToken cancellationToken = default);
+        Task ExportBelstatDataAsync(string title, string subtitle, IReadOnlyList<string> headers, IReadOnlyList<string[]> rows, string filePath, string? filterNote = null, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Экспорт интерпретации статистического ряда (Белстат) в PDF: сводные показатели,
+        /// разбор по годам, примечания статистического анализа и рекомендации для следователя.
+        /// </summary>
+        Task ExportInterpretationAsync(InterpretationResult result, string filePath, CancellationToken cancellationToken = default);
     }
 }

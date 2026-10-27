@@ -1,0 +1,22 @@
+﻿DIM id=razrez_594 name= ru=
+   LOCALREP={"enumeration":"urn:sdmx:org.sdmx.infomodel.codelist.Codelist=BELSTAT:CL_razrez_594(1.0)"}
+DIM id=priznak_451 name= ru=
+   LOCALREP={"enumeration":"urn:sdmx:org.sdmx.infomodel.codelist.Codelist=BELSTAT:CL_priznak_451(1.0)"}
+DIM id=unit_10103000003 name= ru=
+   LOCALREP={"enumeration":"urn:sdmx:org.sdmx.infomodel.codelist.Codelist=BELSTAT:CL_unit_10103000003(1.0)"}
+=== CODELISTS ===
+CL id=CL_priznak_451 ru=Ð¢Ð¸Ð¿ Ð¼ÐµÑÑÐ½Ð¾ÑÑÐ¸ codesCount=9
+   first codes:
+      code id=507552 ru=ÐÑÐµÐ³Ð¾ Ð¿Ð¾ ÑÐ¸Ð¿Ð°Ð¼ Ð¼ÐµÑÑÐ½Ð¾ÑÑÐ¸
+      code id=517602 ru=Ð³Ð¾ÑÐ¾Ð´ÑÐºÐ°Ñ Ð¼ÐµÑÑÐ½Ð¾ÑÑÑ
+      code id=517603 ru=Ð±Ð¾Ð»ÑÑÐ¸Ðµ Ð³Ð¾ÑÐ¾Ð´Ð°
+      code id=517604 ru=ÑÑÐµÐ´Ð½Ð¸Ðµ Ð¸ Ð¼Ð°Ð»ÑÐµ Ð³Ð¾ÑÐ¾Ð´ÑÐºÐ¸Ðµ Ð¿Ð¾ÑÐµÐ»ÐµÐ½Ð¸Ñ
+CL id=CL_razrez_594 ru=Ð¢ÐµÑÑÐ¸ÑÐ¾ÑÐ¸Ñ Ð ÐµÑÐ¿ÑÐ±Ð»Ð¸ÐºÐ¸ ÐÐµÐ»Ð°ÑÑÑÑ codesCount=374
+   first codes:
+      code id=699961 ru=Ð ÐµÑÐ¿ÑÐ±Ð»Ð¸ÐºÐ° ÐÐµÐ»Ð°ÑÑÑÑ
+      code id=919067 ru=ÐÑÐµÑÑÑÐºÐ°Ñ Ð¾Ð±Ð»Ð°ÑÑÑ
+      code id=919075 ru=ÐÐ°ÑÐ°Ð½Ð¾Ð²Ð¸ÑÑÐºÐ¸Ð¹
+      code id=984146 ru=Ð³Ð¿. ÐÐ¾ÑÐ¾Ð´Ð¸ÑÐµ
+CL id=CL_unit_10103000003 ru=ÐÐ´Ð¸Ð½Ð¸ÑÑ Ð¸Ð·Ð¼ÐµÑÐµÐ½Ð¸Ñ codesCount=1
+   first codes:
+      code id=206 ru=ÐµÐ´Ð¸Ð½Ð¸Ñ

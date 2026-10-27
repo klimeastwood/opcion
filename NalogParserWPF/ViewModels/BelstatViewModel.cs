@@ -71,6 +71,12 @@ namespace NalogParserWPF.ViewModels
         /// <summary>Сообщение, когда контейнер DI недоступен при открытии окна таблицы.</summary>
         private const string ResultWindowServiceProviderMessage = "Не удалось открыть таблицу: контейнер DI не инициализирован.";
 
+        /// <summary>Сообщение, когда интерпретацию предлагают открыть, а данных для разбора нет.</summary>
+        private const string InterpretationEmptyMessage = "Нет данных для интерпретации: получите значения показателя на вкладке «Госстатистика».";
+
+        /// <summary>Сообщение, когда контейнер DI недоступен при открытии окна интерпретации.</summary>
+        private const string InterpretationServiceProviderMessage = "Не удалось открыть интерпретацию: контейнер DI не инициализирован.";
+
         private readonly IBelstatApiService _belstatApiService;
         private readonly IBelstatHistoryRepository _belstatHistoryRepository;
         private readonly IPdfExportService _pdfExportService;
@@ -162,6 +168,7 @@ namespace NalogParserWPF.ViewModels
             ExportExcelCommand = new RelayCommand(_ => _ = ExportExcelAsync(), _ => HasExportData);
             ExportCsvCommand = new RelayCommand(_ => _ = ExportCsvAsync(), _ => HasExportData);
             OpenInNewWindowCommand = new RelayCommand(_ => OpenInNewWindow(), _ => IsResultVisible);
+            OpenInterpretationCommand = new RelayCommand(_ => OpenInterpretation(), _ => IsResultVisible);
         }
 
         /// <summary>
@@ -375,6 +382,9 @@ namespace NalogParserWPF.ViewModels
         /// <summary>Открытие таблицы текущего результата отдельным окном (крупный просмотр).</summary>
         public RelayCommand OpenInNewWindowCommand { get; }
 
+        /// <summary>Разбор ряда показателя: окно «Интерпретация статистических данных».</summary>
+        public RelayCommand OpenInterpretationCommand { get; }
+
         private void RaiseCommandStates()
         {
             LoadRubricsCommand.RaiseCanExecuteChanged();
@@ -389,6 +399,7 @@ namespace NalogParserWPF.ViewModels
             ExportExcelCommand.RaiseCanExecuteChanged();
             ExportCsvCommand.RaiseCanExecuteChanged();
             OpenInNewWindowCommand.RaiseCanExecuteChanged();
+            OpenInterpretationCommand.RaiseCanExecuteChanged();
         }
 
         private void NotifyResultChanged()
@@ -985,6 +996,57 @@ namespace NalogParserWPF.ViewModels
             }
         }
 
+        /// <summary>
+        /// Открывает окно «📊 Интерпретация статистических данных» для текущего ряда
+        /// (кнопка «Интерпретация»). Окно создаётся контейнером DI и получает копию
+        /// таблицы результата: исходные данные вкладки не изменяются, а разбор
+        /// (среднее, отклонение, тренд, аномалии, рекомендации) выполняется сервисом
+        /// интерпретации. Диалог модальный, поэтому после закрытия вкладка остаётся в том же состоянии.
+        /// </summary>
+        private void OpenInterpretation()
+        {
+            var table = ResultTable;
+            if (!IsResultVisible || table == null)
+            {
+                _notifications.ShowWarning(InterpretationEmptyMessage);
+                return;
+            }
+
+            try
+            {
+                var window = App.ServiceProvider?.GetRequiredService<Views.BelstatInterpretationWindow>();
+                if (window == null)
+                {
+                    _logger.LogWarning("App.ServiceProvider не инициализирован, окно интерпретации не открыто");
+                    _notifications.ShowError(InterpretationServiceProviderMessage);
+                    return;
+                }
+
+                // Название показателя берём из выбранного показателя, иначе — из заголовка результата
+                // (загрузка из истории или данные рубрики).
+                var indicatorName = !string.IsNullOrWhiteSpace(_selectedIndicator?.Name)
+                    ? _selectedIndicator!.Name!
+                    : _resultTitle;
+
+                if (window.DataContext is BelstatInterpretationViewModel interpretation)
+                {
+                    _ = interpretation.LoadDataAsync(table, indicatorName, _resultSubtitle);
+                }
+                else
+                {
+                    _logger.LogWarning("Окно интерпретации создано без BelstatInterpretationViewModel — данные не переданы");
+                }
+
+                window.Owner = Application.Current?.MainWindow;
+                window.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка при открытии окна интерпретации статистических данных");
+                _notifications.ShowError($"Ошибка при открытии окна интерпретации: {ex.Message}");
+            }
+        }
+
         // ================= Построение таблицы результата =================
 
         private void ApplyResult(string[] headers, List<string[]> rows, string title, string subtitle)
@@ -1335,6 +1397,61 @@ namespace NalogParserWPF.ViewModels
 
         // ================= Экспорт =================
 
+        /// <summary>
+        /// Собирает данные для экспорта: заголовок, подзаголовок и строки, которые сейчас
+        /// показаны в таблице результата. Если к таблице применён фильтр (поле «🔎 Фильтр:»),
+        /// выгружаются только отобранные строки, а в документ добавляется пометка о фильтре.
+        /// Данные берутся из представления таблицы (<see cref="System.Data.DataTable.DefaultView"/>),
+        /// а не из DataGrid, поэтому экспорт не зависит от того, открыто ли отдельное окно с таблицей.
+        /// </summary>
+        public BelstatExportData GetExportData()
+        {
+            var view = ResultTable?.DefaultView;
+            var filterText = DataGridFilterHelper.GetAppliedFilterText(view);
+
+            // Таблицы нет или фильтр пуст: выгружаем исходный результат как есть,
+            // без повторного чтения строк (порядок и содержимое не меняются).
+            if (view?.Table == null || filterText.Length == 0)
+            {
+                return new BelstatExportData
+                {
+                    Title = _resultTitle,
+                    Subtitle = _resultSubtitle,
+                    Headers = _resultHeaders,
+                    Rows = _resultRows,
+                    FilterText = filterText,
+                    TotalRowCount = _resultRows.Count
+                };
+            }
+
+            // В таблице действует RowFilter — читаем именно отфильтрованные строки,
+            // чтобы в отчёт не попали данные, скрытые в таблице.
+            var rows = new List<string[]>(view.Count);
+            foreach (DataRowView rowView in view)
+            {
+                var row = new string[_resultHeaders.Length];
+                for (var i = 0; i < row.Length && i < view.Table.Columns.Count; i++)
+                    row[i] = rowView[i]?.ToString() ?? string.Empty;
+
+                rows.Add(row);
+            }
+
+            _logger.LogInformation(
+                "Экспорт по фильтру «{Filter}»: выгружается {Filtered} из {Total} строк",
+                filterText, rows.Count, _resultRows.Count);
+
+            return new BelstatExportData
+            {
+                Title = _resultTitle,
+                Subtitle = _resultSubtitle,
+                Headers = _resultHeaders,
+                Rows = rows,
+                FilterText = filterText,
+                TotalRowCount = _resultRows.Count
+            };
+        }
+
+
         private async Task ExportPdfAsync()
         {
             if (!HasExportData)
@@ -1357,8 +1474,9 @@ namespace NalogParserWPF.ViewModels
                 StatusMessage = "Экспорт в PDF...";
                 _logger.LogInformation("Начало экспорта данных госстатистики в PDF: {Path}", saveDialog.FileName);
 
+                var data = GetExportData();
                 await _pdfExportService.ExportBelstatDataAsync(
-                    _resultTitle, _resultSubtitle, _resultHeaders, _resultRows, saveDialog.FileName);
+                    data.Title, data.Subtitle, data.Headers, data.Rows, saveDialog.FileName, data.FilterNote);
 
                 StatusMessage = "Экспорт в PDF завершен.";
                 _notifications.ShowSuccess($"Файл PDF успешно сохранен!\n{saveDialog.FileName}");
@@ -1393,36 +1511,55 @@ namespace NalogParserWPF.ViewModels
                 StatusMessage = "Экспорт в Excel...";
                 _logger.LogInformation("Начало экспорта данных госстатистики в Excel: {Path}", saveDialog.FileName);
 
-                var headers = _resultHeaders;
-                var rows = _resultRows;
+                var data = GetExportData();
+                var headers = data.Headers;
+                var rows = data.Rows;
 
                 OfficeOpenXml.ExcelPackage.License.SetNonCommercialPersonal(ExcelLicenseHolder);
 
                 using var package = new OfficeOpenXml.ExcelPackage();
                 var sheet = package.Workbook.Worksheets.Add("Госстатистика");
 
-                sheet.Cells[1, 1].Value = _resultTitle;
-                sheet.Cells[1, 1, 1, headers.Length].Merge = true;
-                sheet.Cells[1, 1].Style.Font.Bold = true;
+                // Шапка отчёта: заголовок, подзаголовок и (при активном фильтре) пометка
+                // о том, что выгружены только отобранные строки. Номер строки шапки таблицы
+                // считается по факту, потому что пометка может отсутствовать.
+                var headerRow = 1;
+                sheet.Cells[headerRow, 1].Value = data.Title;
+                sheet.Cells[headerRow, 1, headerRow, Math.Max(1, headers.Count)].Merge = true;
+                sheet.Cells[headerRow, 1].Style.Font.Bold = true;
+                headerRow++;
 
-                if (!string.IsNullOrWhiteSpace(_resultSubtitle))
+                if (!string.IsNullOrWhiteSpace(data.Subtitle))
                 {
-                    sheet.Cells[2, 1].Value = _resultSubtitle;
-                    sheet.Cells[2, 1, 2, headers.Length].Merge = true;
+                    sheet.Cells[headerRow, 1].Value = data.Subtitle;
+                    sheet.Cells[headerRow, 1, headerRow, Math.Max(1, headers.Count)].Merge = true;
+                    headerRow++;
                 }
 
-                for (int c = 0; c < headers.Length; c++)
-                    sheet.Cells[3, c + 1].Value = headers[c];
+                if (!string.IsNullOrWhiteSpace(data.FilterNote))
+                {
+                    sheet.Cells[headerRow, 1].Value = data.FilterNote;
+                    sheet.Cells[headerRow, 1, headerRow, Math.Max(1, headers.Count)].Merge = true;
+                    sheet.Cells[headerRow, 1].Style.Font.Italic = true;
+                    headerRow++;
+                }
+
+                for (int c = 0; c < headers.Count; c++)
+                    sheet.Cells[headerRow, c + 1].Value = headers[c];
 
                 for (int r = 0; r < rows.Count; r++)
                 {
-                    for (int c = 0; c < rows[r].Length && c < headers.Length; c++)
-                        sheet.Cells[r + 4, c + 1].Value = rows[r][c];
+                    for (int c = 0; c < rows[r].Length && c < headers.Count; c++)
+                        sheet.Cells[headerRow + 1 + r, c + 1].Value = rows[r][c];
                 }
 
-                sheet.Cells[3, 1, 3, headers.Length].Style.Font.Bold = true;
-                sheet.Cells[3, 1, Math.Max(3, rows.Count + 3), headers.Length].Style.Border
-                    .BorderAround(OfficeOpenXml.Style.ExcelBorderStyle.Thin);
+                if (headers.Count > 0)
+                {
+                    sheet.Cells[headerRow, 1, headerRow, headers.Count].Style.Font.Bold = true;
+                    sheet.Cells[headerRow, 1, Math.Max(headerRow, headerRow + rows.Count), headers.Count].Style.Border
+                        .BorderAround(OfficeOpenXml.Style.ExcelBorderStyle.Thin);
+                }
+
                 sheet.Cells.AutoFitColumns();
 
                 await Task.Run(() => package.SaveAs(new System.IO.FileInfo(saveDialog.FileName)));
@@ -1459,12 +1596,16 @@ namespace NalogParserWPF.ViewModels
             {
                 StatusMessage = "Экспорт в CSV...";
 
+                var data = GetExportData();
+
                 var sb = new StringBuilder();
-                sb.AppendLine(CsvEscape(_resultTitle));
-                if (!string.IsNullOrWhiteSpace(_resultSubtitle))
-                    sb.AppendLine(CsvEscape(_resultSubtitle));
-                sb.AppendLine(string.Join(";", _resultHeaders.Select(CsvEscape)));
-                foreach (var row in _resultRows)
+                sb.AppendLine(CsvEscape(data.Title));
+                if (!string.IsNullOrWhiteSpace(data.Subtitle))
+                    sb.AppendLine(CsvEscape(data.Subtitle));
+                if (!string.IsNullOrWhiteSpace(data.FilterNote))
+                    sb.AppendLine(CsvEscape(data.FilterNote));
+                sb.AppendLine(string.Join(";", data.Headers.Select(CsvEscape)));
+                foreach (var row in data.Rows)
                     sb.AppendLine(string.Join(";", row.Select(CsvEscape)));
 
                 await File.WriteAllTextAsync(saveDialog.FileName, sb.ToString(),

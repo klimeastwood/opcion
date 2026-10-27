@@ -1,0 +1,34 @@
+DS JSON length = 221991
+conceptSchemes=1 codelists=3 dataStructures=1
+DIM razrez_594 concept=razrez_594 ru=Территория Республики Беларусь codelist=CL_razrez_594 codes=374
+    699961 => Республика Беларусь
+    919067 => Брестская область
+    919075 => Барановичский
+    984146 => гп. Городище
+DIM priznak_451 concept=priznak_451 ru=Тип местности codelist=CL_priznak_451 codes=9
+    507552 => Всего по типам местности
+    517602 => городская местность
+    517603 => большие города
+    517604 => средние и малые городские поселения
+DIM unit_10103000003 concept=unit_10103000003 ru=Единицы измерения codelist=CL_unit_10103000003 codes=1
+    206 => единиц
+VALUES DIM razrez_594 name="Territory of the Republic of Belarus" values=136
+    919140 => "Rogachev district"
+    919221 => "Cherikov district"
+    919089 => "Pruzhany district"
+    699961 => "Republic of Belarus"
+    RU[919140] = Рогачевский
+    RU[919221] = Чериковский
+    RU[919089] = Пружанский
+    RU[699961] = Республика Беларусь
+VALUES DIM priznak_451 name="Type of area" values=3
+    507552 => "By all types"
+    517608 => "Rural area"
+    517602 => "Urban area"
+    RU[507552] = Всего по типам местности
+    RU[517608] = сельская местность
+    RU[517602] = городская местность
+VALUES DIM unit_10103000003 name="Units of measurement" values=1
+    206 => "units"
+    RU[206] = единиц
+OBSERVATIONS: 151

@@ -12,6 +12,11 @@ namespace NalogParserWPF
             InitializeComponent();
             DataContext = viewModel;
             viewModel.CloseRequested += (_, _) => Close();
+
+            // Сортировка по клику на заголовок колонки и фильтр по тексту поля «🔎 Фильтр:»
+            // над таблицей изменений статусов.
+            DataGridSortHelper.AttachSorting(dgChanges);
+            DataGridFilterHelper.AttachFilter(dgChanges, ChangesFilterBox);
         }
 
         private void ChangesGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)

@@ -19,6 +19,11 @@ namespace NalogParserWPF.Views
         {
             InitializeComponent();
             DataContext = viewModel;
+
+            // Сортировка по клику на заголовок колонки и фильтр по тексту поля «🔎 Фильтр:»
+            // над таблицей результата (колонки создаются автоматически из DataTable).
+            DataGridSortHelper.AttachSorting(ResultGrid);
+            DataGridFilterHelper.AttachFilter(ResultGrid, ResultFilterBox);
         }
 
         /// <summary>Закрытие окна кнопкой «Закрыть».</summary>

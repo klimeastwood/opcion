@@ -239,7 +239,7 @@ namespace NalogParserWPF.Services
             }
         }
 
-        public async Task ExportBelstatDataAsync(string title, string subtitle, IReadOnlyList<string> headers, IReadOnlyList<string[]> rows, string filePath, CancellationToken cancellationToken = default)
+        public async Task ExportBelstatDataAsync(string title, string subtitle, IReadOnlyList<string> headers, IReadOnlyList<string[]> rows, string filePath, string? filterNote = null, CancellationToken cancellationToken = default)
         {
             var headerList = headers ?? Array.Empty<string>();
             var rowList = rows ?? Array.Empty<string[]>();
@@ -251,7 +251,7 @@ namespace NalogParserWPF.Services
                 await Task.Run(() =>
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    Document.Create(container => BuildBelstatPage(container, title, subtitle, headerList, rowList)).GeneratePdf(filePath);
+                    Document.Create(container => BuildBelstatPage(container, title, subtitle, headerList, rowList, filterNote)).GeneratePdf(filePath);
                 }, cancellationToken);
 
                 _logger.LogInformation("Экспорт данных Белстата «{Title}» завершен", title);
@@ -263,6 +263,41 @@ namespace NalogParserWPF.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Ошибка при экспорте данных Белстата «{Title}» в PDF", title);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Экспорт интерпретации статистического ряда (Белстат) в PDF: сводные показатели,
+        /// разбор по годам, примечания статистического анализа и рекомендации для следователя.
+        /// Шапка бланка СК выводится только на первой странице, подпись «Проверил следователь» —
+        /// внизу последней страницы.
+        /// </summary>
+        public async Task ExportInterpretationAsync(InterpretationResult result, string filePath, CancellationToken cancellationToken = default)
+        {
+            if (result == null) throw new ArgumentNullException(nameof(result));
+
+            _logger.LogInformation(
+                "Начало экспорта интерпретации «{Indicator}» ({Count} точек) в PDF",
+                result.IndicatorName, result.Points.Count);
+
+            try
+            {
+                await Task.Run(() =>
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    Document.Create(container => BuildInterpretationPage(container, result)).GeneratePdf(filePath);
+                }, cancellationToken);
+
+                _logger.LogInformation("Экспорт интерпретации «{Indicator}» завершен", result.IndicatorName);
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка при экспорте интерпретации «{Indicator}» в PDF", result.IndicatorName);
                 throw;
             }
         }
@@ -607,8 +642,10 @@ namespace NalogParserWPF.Services
         /// <summary>
         /// Универсальная страница отчёта по данным государственной статистики:
         /// заголовок, подзаголовок, счётчик строк и таблица с произвольным набором колонок.
+        /// <paramref name="filterNote"/> выводится отдельной строкой-пометкой, когда в отчёт
+        /// попали не все строки результата, а отобранные фильтром в таблице.
         /// </summary>
-        private static void BuildBelstatPage(IDocumentContainer container, string title, string subtitle, IReadOnlyList<string> headers, IReadOnlyList<string[]> rows)
+        private static void BuildBelstatPage(IDocumentContainer container, string title, string subtitle, IReadOnlyList<string> headers, IReadOnlyList<string[]> rows, string? filterNote = null)
         {
             container.Page(page =>
             {
@@ -628,6 +665,12 @@ namespace NalogParserWPF.Services
 
                     if (!string.IsNullOrWhiteSpace(subtitle))
                         column.Item().Text(subtitle).FontSize(10).FontColor("#666666");
+
+                    // Пометка о фильтре: документ прямо говорит, что строк в таблице
+                    // меньше, чем в полном результате, и по какому запросу они отобраны.
+                    if (!string.IsNullOrWhiteSpace(filterNote))
+                        column.Item().Background("#FFF6E5").Padding(6)
+                            .Text(filterNote!).FontSize(10).FontColor("#8A5A00");
 
                     column.Item().Text($"Строк в таблице: {rows.Count}").FontSize(10).FontColor("#666666");
 
@@ -673,6 +716,174 @@ namespace NalogParserWPF.Services
                 {
                     for (var i = 0; i < columnCount; i++)
                         table.Cell().Element(ValueCell).Text(i < row.Length ? row[i] : string.Empty);
+                }
+            });
+        }
+
+        /// <summary>
+        /// Страница отчёта «Интерпретация статистических данных»: сводные показатели, разбор
+        /// по годам, примечания статистического анализа и рекомендации для следователя.
+        /// Шапка бланка выводится только на первой странице, подпись «Проверил следователь» —
+        /// внизу последней страницы.
+        /// </summary>
+        private static void BuildInterpretationPage(IDocumentContainer container, InterpretationResult result)
+        {
+            container.Page(page =>
+            {
+                page.Size(PageSizes.A4);
+                page.Margin(2, Unit.Centimetre);
+                page.PageColor(Colors.White);
+                page.DefaultTextStyle(TextStyle.Default.FontFamily(DefaultFont).FontSize(BodyFontSize));
+
+                page.Header().ShowOnce().Element(BuildBelstatHeader);
+
+                page.Content().PaddingVertical(1, Unit.Centimetre).Column(column =>
+                {
+                    column.Spacing(8);
+
+                    column.Item().Text("Интерпретация статистических данных").FontSize(16).Bold().FontColor("#1A5C5C");
+                    column.Item().LineHorizontal(1, Unit.Point).LineColor("#1A8B8B");
+                    column.Item().Text($"Показатель: {Value(result.IndicatorName)}").FontSize(12).Bold();
+                    column.Item().Text(BuildInterpretationPeriodText(result)).FontSize(10).FontColor("#666666");
+
+                    column.Item().PaddingTop(4).Text("Сводные показатели").FontSize(13).Bold().FontColor("#1A5C5C");
+                    column.Item().Element(c => BuildInterpretationSummaryTable(c, result));
+
+                    if (result.Points.Count > 0)
+                    {
+                        column.Item().PaddingTop(4).Text("Разбор по годам").FontSize(13).Bold().FontColor("#1A5C5C");
+                        column.Item().Element(c => BuildInterpretationPointsTable(c, result));
+                    }
+
+                    if (result.Notes.Count > 0)
+                    {
+                        column.Item().PaddingTop(4).Text("Статистический анализ").FontSize(13).Bold().FontColor("#1A5C5C");
+                        column.Item().Element(c => BuildInterpretationNoteList(c, result.Notes));
+                    }
+
+                    if (result.Recommendations.Count > 0)
+                    {
+                        column.Item().PaddingTop(4).Text("Рекомендации для следственной работы").FontSize(13).Bold().FontColor("#1A5C5C");
+                        column.Item().Element(c => BuildInterpretationNoteList(c, result.Recommendations));
+                    }
+
+                    // Подпись «Проверил следователь» прижимается к низу последней страницы отчёта.
+                    column.Item().Element(BuildSignature);
+                });
+
+                page.Footer().Element(BuildBelstatFooter);
+            });
+        }
+
+        /// <summary>Строка о периоде наблюдений: первый–последний год и количество точек.</summary>
+        private static string BuildInterpretationPeriodText(InterpretationResult result)
+        {
+            if (result.Years.Count == 0)
+                return "Период: годы наблюдений в таблице не найдены.";
+
+            if (result.Years.Count == 1)
+                return $"Период: {result.Years[0]} г. Наблюдений: 1.";
+
+            return $"Период: {result.Years[0]}–{result.Years[^1]} гг. Наблюдений: {result.Years.Count}.";
+        }
+
+        /// <summary>Сводные показатели интерпретации: среднее, σ, тренд, скачки, аномалии.</summary>
+        private static void BuildInterpretationSummaryTable(IContainer container, InterpretationResult result)
+        {
+            var rows = new List<string[]>
+            {
+                new[] { "Среднее значение за период", Value(result.AverageDisplay) },
+                new[] { "Стандартное отклонение (σ)", Value(result.DeviationDisplay) },
+                new[] { "Тренд периода", Value(result.Trend) },
+                new[] { "Скачки «год к году» (более 50 %)", result.JumpCount.ToString() },
+                new[] { "Устойчивое изменение", Value(result.SustainedTrend) },
+                new[] { "Аномалии (более 2σ)", Value(result.Anomaly) }
+            };
+
+            container.Table(table =>
+            {
+                table.ColumnsDefinition(columns =>
+                {
+                    columns.ConstantColumn(200);
+                    columns.RelativeColumn();
+                });
+
+                static IContainer LabelCell(IContainer cell) =>
+                    cell.Border(0.5f).Background("#F0F8F8").Padding(5)
+                        .DefaultTextStyle(x => x.FontSize(9).Bold().FontColor("#1A5C5C"));
+
+                static IContainer ValueCell(IContainer cell) =>
+                    cell.Border(0.5f).Padding(5).DefaultTextStyle(x => x.FontSize(9));
+
+                foreach (var row in rows)
+                {
+                    table.Cell().Element(LabelCell).Text(row[0]);
+                    table.Cell().Element(ValueCell).Text(row[1]);
+                }
+            });
+        }
+
+        /// <summary>Таблица разбора по годам: значение, отклонение, σ, тренд и отметка года.</summary>
+        private static void BuildInterpretationPointsTable(IContainer container, InterpretationResult result)
+        {
+            container.Table(table =>
+            {
+                table.ColumnsDefinition(columns =>
+                {
+                    columns.ConstantColumn(36);
+                    columns.RelativeColumn(2);
+                    columns.RelativeColumn(2);
+                    columns.ConstantColumn(38);
+                    columns.ConstantColumn(34);
+                    columns.RelativeColumn(5);
+                });
+
+                static IContainer HeaderCell(IContainer cell) =>
+                    cell.Border(0.5f).Background("#1A8B8B").Padding(4)
+                        .DefaultTextStyle(x => x.FontSize(8).Bold().FontColor(Colors.White));
+
+                static IContainer ValueCell(IContainer cell) =>
+                    cell.Border(0.5f).Padding(4).DefaultTextStyle(x => x.FontSize(8));
+
+                foreach (var header in new[] { "Год", "Значение", "Отклонение", "σ", "Тренд", "Отметка" })
+                    table.Cell().Element(HeaderCell).Text(header);
+
+                foreach (var point in result.Points)
+                {
+                    var color = InterpretationHelper.GetHexColor(point.Severity);
+
+                    table.Cell().Element(ValueCell).Text(point.Year.ToString()).FontColor(color);
+                    table.Cell().Element(ValueCell).Text(point.ValueDisplay).FontColor(color);
+                    table.Cell().Element(ValueCell).Text(point.DeviationDisplay).FontColor(color);
+                    table.Cell().Element(ValueCell).Text(point.Sigma.ToString("0.00")).FontColor(color);
+                    table.Cell().Element(ValueCell).Text(Value(point.Trend)).FontColor(color);
+                    table.Cell().Element(ValueCell).Text(Value(InterpretationHelper.GetPointNote(point))).FontColor(color);
+                }
+            });
+        }
+
+        /// <summary>Список примечаний или рекомендаций: тип выделен цветом важности записи.</summary>
+        private static void BuildInterpretationNoteList(IContainer container, IReadOnlyList<InterpretationNote> notes)
+        {
+            container.Column(column =>
+            {
+                column.Spacing(4);
+
+                foreach (var note in notes)
+                {
+                    var color = InterpretationHelper.GetHexColor(note.Severity);
+
+                    column.Item().Border(0.5f).BorderColor("#CCCCCC").Background("#F7F9F9").Padding(6).Text(text =>
+                    {
+                        text.DefaultTextStyle(x => x.FontSize(9));
+
+                        if (!string.IsNullOrWhiteSpace(note.Type))
+                            text.Span($"{note.Type}: ").Bold().FontColor(color);
+                        else
+                            text.Span("• ").Bold().FontColor(color);
+
+                        text.Span(Value(note.Text)).FontColor("#333333");
+                    });
                 }
             });
         }

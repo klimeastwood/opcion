@@ -1,0 +1,32 @@
+API AlignmentExtensions.AlignLeft(IContainer element) -> IContainer
+API AlignmentExtensions.AlignCenter(IContainer element) -> IContainer
+API AlignmentExtensions.AlignRight(IContainer element) -> IContainer
+API AlignmentExtensions.AlignTop(IContainer element) -> IContainer
+API AlignmentExtensions.AlignMiddle(IContainer element) -> IContainer
+API AlignmentExtensions.AlignBottom(IContainer element) -> IContainer
+API ExtendExtensions.Extend(IContainer element) -> IContainer
+API ExtendExtensions.ExtendVertical(IContainer element) -> IContainer
+API ExtendExtensions.ExtendHorizontal(IContainer element) -> IContainer
+API StyledBoxExtensions.BorderAlignmentOutside(IContainer element) -> IContainer
+API StyledBoxExtensions.BorderAlignmentMiddle(IContainer element) -> IContainer
+API StyledBoxExtensions.BorderAlignmentInside(IContainer element) -> IContainer
+rows=10 variant=none pages=1 signaturePage=1,1,1
+rows=10 variant=extend-item pages=2 signaturePage=1,1,2,2,2
+rows=10 variant=extend-wrapper pages=2 signaturePage=1,1,2,2,2
+rows=10 variant=extend-align-bottom pages=2 signaturePage=1,1,2,2,2
+rows=20 variant=none pages=1 signaturePage=1,1,1
+rows=20 variant=extend-item pages=2 signaturePage=1,1,2,2,2
+rows=20 variant=extend-wrapper pages=2 signaturePage=1,1,2,2,2
+rows=20 variant=extend-align-bottom pages=2 signaturePage=1,1,2,2,2
+rows=30 variant=none pages=1 signaturePage=1,1,1
+rows=30 variant=extend-item pages=2 signaturePage=1,1,2,2,2
+rows=30 variant=extend-wrapper pages=2 signaturePage=1,1,2,2,2
+rows=30 variant=extend-align-bottom pages=2 signaturePage=1,1,2,2,2
+rows=40 variant=none pages=1 signaturePage=1,1,1
+rows=40 variant=extend-item pages=2 signaturePage=1,1,2,2,2
+rows=40 variant=extend-wrapper pages=2 signaturePage=1,1,2,2,2
+rows=40 variant=extend-align-bottom pages=2 signaturePage=1,1,2,2,2
+rows=120 variant=none pages=3 signaturePage=3,3,3
+rows=120 variant=extend-item pages=4 signaturePage=3,3,4,4,4
+rows=120 variant=extend-wrapper pages=4 signaturePage=3,3,4,4,4
+rows=120 variant=extend-align-bottom pages=4 signaturePage=3,3,4,4,4

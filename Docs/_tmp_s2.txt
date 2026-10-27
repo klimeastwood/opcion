@@ -1,0 +1,3 @@
+﻿STRUCT.NAME type=String value="Number of places in preschool education  institutions"
+DIM0 full = {"id":"razrez_594","name":"Territory of the Republic of Belarus","keyPosition":0,"role":null,"values":[{"id":"919140","name":"Rogachev district"},{"id":"919221","name":"Cherikov district"},{"id":"919089","name":"Pruzhany district"},{"id":"919130","name":"Zhlobin district"},{"id":"699961","name":"Republic of Belarus"},{"id":"919187","name":"Minsk district"},{"id":"919213","name":"Krichev district"},{"id":"919188","name":"Molodechno district"},{"id":"919145","name":"Gomel, city of"},{"id":"919148","name":"Volkovysk district"},{"id":"919105","name":"Liozno district"},{"id":"919068","name":"Vitebs
+ATTRIBUTES KEYS=dataset,series,observation

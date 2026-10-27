@@ -164,6 +164,7 @@ namespace NalogParserWPF
 
                     services.AddTransient<IResultFormatter, ResultFormatter>();
                     services.AddTransient<IPdfExportService, PdfExportService>();
+                    services.AddTransient<IBelstatInterpretationService, BelstatInterpretationService>();
 
                     services.AddSingleton<MainViewModel>();
                     services.AddSingleton<MainWindow>();
@@ -173,6 +174,7 @@ namespace NalogParserWPF
                     services.AddTransient<StatusChangeViewModel>();
                     services.AddSingleton<ExchangeRateViewModel>();
                     services.AddSingleton<BelstatViewModel>();
+                    services.AddTransient<BelstatInterpretationViewModel>();
                     services.AddTransient<SettingsViewModel>();
                     services.AddTransient<HistoryDetailWindow>();
                     services.AddTransient<BatchSearchWindow>();
@@ -180,6 +182,7 @@ namespace NalogParserWPF
                     services.AddTransient<Views.SettingsWindow>();
                     services.AddTransient<Views.AboutWindow>();
                     services.AddTransient<Views.BelstatDataWindow>();
+                    services.AddTransient<Views.BelstatInterpretationWindow>();
                 })
                 .Build();
 

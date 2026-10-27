@@ -367,4 +367,46 @@ namespace NalogParserWPF.Models
         [JsonProperty("enumeration")]
         public string? Enumeration { get; set; }
     }
+
+    /// <summary>
+    /// Данные для экспорта таблицы государственной статистики: шапка, строки и сведения о фильтре.
+    /// Собирается ViewModel в момент экспорта, поэтому в PDF/Excel/CSV попадают только те строки,
+    /// что сейчас показаны в таблице (с учётом фильтра «🔎 Фильтр:»), а документ помечается
+    /// запросом, по которому отобраны данные.
+    /// </summary>
+    public class BelstatExportData
+    {
+        /// <summary>Заголовок отчёта (название показателя).</summary>
+        public string Title { get; init; } = string.Empty;
+
+        /// <summary>Подзаголовок отчёта (период, источник данных).</summary>
+        public string Subtitle { get; init; } = string.Empty;
+
+        /// <summary>Шапка таблицы: подписи колонок в порядке отображения.</summary>
+        public IReadOnlyList<string> Headers { get; init; } = Array.Empty<string>();
+
+        /// <summary>Строки для экспорта: при активном фильтре — только отобранные, иначе весь результат.</summary>
+        public IReadOnlyList<string[]> Rows { get; init; } = Array.Empty<string[]>();
+
+        /// <summary>Текст фильтра, применённого к таблице; пустая строка — таблица не отфильтрована.</summary>
+        public string FilterText { get; init; } = string.Empty;
+
+        /// <summary>Всего строк в полном результате (до фильтрации).</summary>
+        public int TotalRowCount { get; init; }
+
+        /// <summary>Отфильтрована ли таблица.</summary>
+        public bool IsFiltered => FilterText.Length > 0;
+
+        /// <summary>Сколько строк будет выгружено.</summary>
+        public int ExportedRowCount => Rows.Count;
+
+        /// <summary>
+        /// Пометка для документа: сколько строк выгружено и по какому запросу. Пустая строка —
+        /// фильтр не применялся, и в отчёт дополнительная строка не добавляется.
+        /// </summary>
+        public string FilterNote => IsFiltered
+            ? $"Экспортированы строки, отобранные фильтром «{FilterText}»: {ExportedRowCount} из {TotalRowCount}."
+            : string.Empty;
+    }
 }
+

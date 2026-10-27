@@ -1,0 +1,6 @@
+﻿TOP=data,meta
+DATA KEYS=dataflows,agencySchemes,conceptSchemes,codelists,dataStructures
+STRUCT KEYS=
+STRUCT NAME=
+DIMENSION KEYS=
+DIM0 KEYS=

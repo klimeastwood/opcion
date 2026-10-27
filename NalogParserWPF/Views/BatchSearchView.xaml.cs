@@ -6,6 +6,7 @@ using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using Microsoft.Extensions.DependencyInjection;
+using NalogParserWPF.Helpers;
 using NalogParserWPF.Models;
 using NalogParserWPF.Services;
 using NalogParserWPF.ViewModels;
@@ -22,6 +23,11 @@ namespace NalogParserWPF.Views
         public BatchSearchView()
         {
             InitializeComponent();
+
+            // Сортировка по клику на заголовок колонки и фильтр по тексту поля «🔎 Фильтр:»
+            // над таблицей результатов массового поиска.
+            DataGridSortHelper.AttachSorting(dgBatchResults);
+            DataGridFilterHelper.AttachFilter(dgBatchResults, BatchFilterBox);
         }
 
         private static INotificationService? Notifications =>
