@@ -99,7 +99,6 @@ NalogParserWPF/
 ├── zaglav.ico # Иконка (рукопожатие)
 └── PROJECT_CONTEXT.md # Контекст проекта для агента
 
-text
 
 ---
 
@@ -114,7 +113,7 @@ text
 ### Сборка и запуск
 
 # Клонировать репозиторий
-git clone https://github.com/your-username/NalogParserWPF.git
+git clone https://github.com/klimeastwood/NalogParserWPF.git
 cd NalogParserWPF
 
 # Сборка
